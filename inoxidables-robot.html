@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot de Posts — Inoxidables del Norte</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #f0d080;
+    --gold-dark: #8a6a1a;
+    --dark: #1a1208;
+    --dark2: #221a0a;
+    --dark3: #2e2010;
+    --steel: #8ab4c8;
+    --steel-light: #d0e8f5;
+    --cream: #f7f0e0;
+    --green: #1e5c38;
+    --green-light: #2d8a55;
+    --white: #ffffff;
+    --shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    font-family: 'Montserrat', sans-serif;
+    color: var(--cream);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 10% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 80%, rgba(30,92,56,0.08) 0%, transparent 50%);
+  }
+
+  /* ===================== BANNER ROTATIVO ===================== */
+  .banner-section {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-bottom: 2px solid var(--gold-dark);
+  }
+
+  .banner-slide {
+    display: none;
+    width: 100%;
+    position: relative;
+  }
+  .banner-slide.active { display: block; animation: fadeIn 0.8s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .banner-slide img {
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .banner-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .banner-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--gold-light);
+    font-style: italic;
+  }
+
+  .banner-controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .banner-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: background 0.3s;
+    border: none;
+  }
+  .banner-dot.active { background: var(--gold); }
+
+  .banner-nav {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--gold-dark);
+    color: var(--gold);
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+  }
+  .banner-nav:hover { background: var(--gold-dark); color: var(--white); }
+  .banner-prev { left: 12px; }
+  .banner-next { right: 12px; }
+
+  /* ===================== HEADER ===================== */
+  .header {
+    text-align: center;
+    padding: 36px 20px 20px;
+    position: relative;
+  }
+
+  .header-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 30px rgba(201,168,76,0.4);
+  }
+
+  .header-logo span { font-style: italic; font-weight: 400; }
+
+  .header-sub {
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--steel);
+    margin-top: 4px;
+  }
+
+  .gold-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 12px auto;
+  }
+
+  /* ===================== MAIN LAYOUT ===================== */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 0;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 16px 40px;
+  }
+
+  @media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ===================== PANEL IZQUIERDO ===================== */
+  .panel-left {
+    background: rgba(255,255,255,0.03);
+    border-right: 1px solid rgba(201,168,76,0.2);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .section-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(201,168,76,0.3);
+  }
+
+  /* Dropdown fancy */
+  .fancy-select {
+    position: relative;
+    width: 100%;
+  }
+
+  .fancy-btn {
+    width: 100%;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--cream);
+    padding: 11px 16px;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+  }
+  .fancy-btn:hover { border-color: var(--gold); background: rgba(201,168,76,0.14); }
+  .fancy-btn .arrow { font-size: 0.7rem; color: var(--gold); transition: transform 0.2s; }
+  .fancy-btn.open .arrow { transform: rotate(180deg); }
+
+  .dropdown-list {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #1e1608;
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  .dropdown-list.open { display: block; animation: slideDown 0.15s ease; }
+
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .dropdown-list::-webkit-scrollbar { width: 4px; }
+  .dropdown-list::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+  .dropdown-item {
+    padding: 9px 16px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s;
+    color: var(--cream);
+    line-height: 1.4;
+  }
+  .dropdown-item:hover { background: rgba(201,168,76,0.15); color: var(--gold-light); }
+  .dropdown-item:last-child { border-bottom: none; }
+
+  /* Etiquetas de selección activa */
+  .selected-tag {
+    display: inline-block;
+    background: rgba(201,168,76,0.18);
+    border: 1px solid rgba(201,168,76,0.5);
+    color: var(--gold-light);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin: 4px 4px 0 0;
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  /* Ingrediente extra */
+  .extra-input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.25);
+    color: var(--cream);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    outline: none;
+    transition: border 0.2s;
+    resize: none;
+  }
+  .extra-input:focus { border-color: var(--gold); }
+  .extra-input::placeholder { color: rgba(255,255,255,0.3); font-style: italic; }
+
+  /* Tono */
+  .tone-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .tone-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.2);
+    color: var(--cream);
+    padding: 8px 6px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .tone-btn:hover, .tone-btn.active {
+    background: rgba(201,168,76,0.2);
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+
+  /* CTA info */
+  .cta-info {
+    background: rgba(30,92,56,0.15);
+    border: 1px solid rgba(45,138,85,0.3);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 0.75rem;
+    line-height: 1.6;
+  }
+  .cta-info strong { color: var(--green-light); }
+
+  /* Generar btn */
+  .generate-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-dark));
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 8px;
+    color: var(--dark);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    animation: shimmer 3s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .generate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(201,168,76,0.5);
+  }
+  .generate-btn:active { transform: translateY(0); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ===================== PANEL DERECHO ===================== */
+  .panel-right {
+    padding: 24px 24px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+  }
+
+  /* Output area */
+  .output-area {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 10px;
+    min-height: 320px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .output-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: rgba(255,255,255,0.2);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .output-placeholder .big-icon {
+    font-size: 3rem;
+    opacity: 0.3;
+  }
+
+  .post-result {
+    display: none;
+    padding: 28px;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .post-result.visible { display: block; }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .post-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold-dark), var(--green));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    font-family: 'Cormorant Garamond', serif;
+    flex-shrink: 0;
+  }
+
+  .post-account { font-weight: 700; font-size: 0.85rem; }
+  .post-account-sub { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
+
+  .post-text {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 18px;
+    font-size: 0.88rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    color: var(--cream);
+    min-height: 180px;
+  }
+
+  .loading-spinner {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(26,18,8,0.85);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    z-index: 20;
+  }
+  .loading-spinner.visible { display: flex; }
+
+  .spinner-ring {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(201,168,76,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .spinner-text {
+    font-size: 0.78rem;
+    color: var(--gold-light);
+    letter-spacing: 0.1em;
+    font-style: italic;
+  }
+
+  /* Action buttons */
+  .action-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+  }
+
+  .btn-copy {
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold-light);
+  }
+  .btn-copy:hover { background: rgba(201,168,76,0.3); }
+
+  .btn-regen {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--cream);
+  }
+  .btn-regen:hover { background: rgba(255,255,255,0.1); }
+
+  .btn-whatsapp {
+    background: rgba(37,211,102,0.15);
+    border: 1px solid rgba(37,211,102,0.35);
+    color: #25d366;
+  }
+  .btn-whatsapp:hover { background: rgba(37,211,102,0.25); }
+
+  /* Historial */
+  .history-section { margin-top: 6px; }
+
+  .history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .history-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgba(255,255,255,0.6);
+    position: relative;
+  }
+  .history-card:hover {
+    border-color: rgba(201,168,76,0.4);
+    color: var(--cream);
+    background: rgba(201,168,76,0.05);
+  }
+
+  .history-badge {
+    font-size: 0.6rem;
+    background: rgba(201,168,76,0.2);
+    color: var(--gold);
+    padding: 2px 7px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 6px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Tips */
+  .tip-box {
+    background: rgba(201,168,76,0.06);
+    border-left: 3px solid var(--gold-dark);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.55);
+  }
+  .tip-box strong { color: var(--gold-light); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--green);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Separador */
+  .sep {
+    height: 1px;
+    background: rgba(201,168,76,0.1);
+    margin: 4px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== BANNER ===================== -->
+<div class="banner-section">
+  <div class="banner-slide active" data-label="🌟 Oferta Mayo — Llévalo todo por $14,500">
+    <img src="https://i.ibb.co/6cfd6sPN/Gemini-Generated-Image-yiel6syiel6syiel.png"
+         alt="Inoxidables del Norte — Banner Oferta Mayo"
+         onerror="this.style.display='none'; this.parentElement.querySelector('.fallback').style.display='flex'">
+    <div class="fallback" style="display:none; background: linear-gradient(135deg,#1a1208,#2e2010); height:200px; align-items:center; justify-content:center;">
+      <div style="text-align:center;">
+        <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; color:#c9a84c; font-weight:700;">Inoxidables del Norte</div>
+        <div style="color:#f0d080; margin-top:8px;">🔥 Oferta Especial Mayo • $14,500</div>
+      </div>
+    </div>
+    <div class="banner-overlay">
+      <span class="banner-label">🌟 Oferta Mayo — Llévalo todo por $14,500</span>
+      <div class="banner-controls">
+        <button class="banner-dot active" onclick="goSlide(0)"></button>
+        <button class="banner-dot" onclick="goSlide(1)"></button>
+        <button class="banner-dot" onclick="goSlide(2)"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="banner-slide" data-label="✨ Acero Quirúrgico T304 — Sin Tóxicos">
+    <div style="background: linear-gradient(135deg,#0e2918,#1a3a20,#0d1f12); height:220px; display:flex; align-items:center; justify-content:center; gap:30px; padding:20px;">
+      <div style="text-align:center; color:var(--cream);">
+        <div style="font-size:3rem; margin-bottom:8px;">🥘</div>
+        <div style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; color:var(--gold); font-weight:700;">Acero Quirúrgico T304</div>
+        <div style="font-size:0.85rem; color:rgba(255,255,255,0.6); margin-top:6px; line-height:1.7;">
+          ✔ No libera toxinas &nbsp;|&nbsp; ✔ No guarda bacterias<br>
+          ✔ Resiste altas temperaturas &nbsp;|&nbsp; ✔ Dura años
+        </div>
+      </div>
+    </div>
+    <div class="banner-overlay">
+      <span class="banner-label">✨ Acero Quirúrgico T304 — Sin Tóxicos</span>
+      <div class="banner-controls">
+        <button class="banner-dot" onclick="goSlide(0)"></button>
+        <button class="banner-dot active" onclick="goSlide(1)"></button>
+        <button class="banner-dot" onclick="goSlide(2)"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="banner-slide" data-label="📲 Contáctanos: 52 2214282564">
+    <div style="background: linear-gradient(135deg,#1a1208,#3a2a0a,#1a1208); height:220px; display:flex; align-items:center; justify-content:center; padding:20px;">
+      <div style="text-align:center;">
+        <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; color:var(--gold); font-weight:700; margin-bottom:12px;">Cocina como un Chef</div>
+        <div style="font-size:0.9rem; color:var(--cream); line-height:1.8;">
+          ✨ Más elegante &nbsp;&nbsp; ✨ Más seguro &nbsp;&nbsp; ✨ Más duradero
+        </div>
+        <div style="margin-top:16px; background:rgba(201,168,76,0.2); border:1px solid var(--gold); border-radius:30px; display:inline-block; padding:10px 24px; color:var(--gold-light); font-weight:700; font-size:1rem;">
+          📲 52 2214282564
+        </div>
+      </div>
+    </div>
+    <div class="banner-overlay">
+      <span class="banner-label">📲 Contáctanos: 52 2214282564</span>
+      <div class="banner-controls">
+        <button class="banner-dot" onclick="goSlide(0)"></button>
+        <button class="banner-dot" onclick="goSlide(1)"></button>
+        <button class="banner-dot active" onclick="goSlide(2)"></button>
+      </div>
+    </div>
+  </div>
+
+  <button class="banner-nav banner-prev" onclick="changeSlide(-1)">‹</button>
+  <button class="banner-nav banner-next" onclick="changeSlide(1)">›</button>
+</div>
+
+<!-- ===================== HEADER ===================== -->
+<div class="header">
+  <div class="header-logo">∞ Inoxidables <span>del Norte</span></div>
+  <div class="header-sub">Robot de Creación de Posts • Cocina Saludable</div>
+  <div class="gold-line"></div>
+</div>
+
+<!-- ===================== MAIN ===================== -->
+<div class="main-grid">
+
+  <!-- PANEL IZQUIERDO -->
+  <div class="panel-left">
+
+    <!-- Hook -->
+    <div>
+      <div class="section-title">🎣 Hook de apertura</div>
+      <div class="fancy-select" id="hookSelect">
+        <button class="fancy-btn" onclick="toggleDropdown('hookList', this)">
+          <span id="hookVal">Seleccionar hook...</span>
+          <span class="arrow">▼</span>
+        </button>
+        <div class="dropdown-list" id="hookList"></div>
+      </div>
+      <div id="hookTag" style="margin-top:6px;"></div>
+    </div>
+
+    <!-- Platillo -->
+    <div>
+      <div class="section-title">🍽️ Platillo a preparar</div>
+      <div class="fancy-select" id="platilloSelect">
+        <button class="fancy-btn" onclick="toggleDropdown('platilloList', this)">
+          <span id="platilloVal">Seleccionar platillo...</span>
+          <span class="arrow">▼</span>
+        </button>
+        <div class="dropdown-list" id="platilloList"></div>
+      </div>
+      <div id="platilloTag" style="margin-top:6px;"></div>
+    </div>
+
+    <!-- Producto destacado -->
+    <div>
+      <div class="section-title">🥘 Producto Inoxidables</div>
+      <div class="fancy-select">
+        <button class="fancy-btn" onclick="toggleDropdown('productoList', this)">
+          <span id="productoVal">Seleccionar producto...</span>
+          <span class="arrow">▼</span>
+        </button>
+        <div class="dropdown-list" id="productoList"></div>
+      </div>
+      <div id="productoTag" style="margin-top:6px;"></div>
+    </div>
+
+    <!-- Tono -->
+    <div>
+      <div class="section-title">🎨 Tono del post</div>
+      <div class="tone-grid">
+        <button class="tone-btn active" onclick="selectTone(this,'educativo')">🎓 Educativo</button>
+        <button class="tone-btn" onclick="selectTone(this,'emocional')">💛 Emocional</button>
+        <button class="tone-btn" onclick="selectTone(this,'urgente')">🔥 Urgente</button>
+        <button class="tone-btn" onclick="selectTone(this,'lujoso')">✨ Lujoso</button>
+        <button class="tone-btn" onclick="selectTone(this,'salud')">💚 Salud</button>
+        <button class="tone-btn" onclick="selectTone(this,'comparativo')">⚖️ Comparativo</button>
+      </div>
+    </div>
+
+    <!-- Extras -->
+    <div>
+      <div class="section-title">✏️ Detalle extra (opcional)</div>
+      <textarea class="extra-input" id="extraInput" rows="2"
+        placeholder="Ej: destacar la oferta de mayo, mencionar la tamalera..."></textarea>
+    </div>
+
+    <!-- CTA info -->
+    <div class="cta-info">
+      <strong>📲 CTA automático:</strong><br>
+      WhatsApp: <strong>811 038 4426</strong><br>
+      WhatsApp: <strong>52 2214282564</strong>
+    </div>
+
+    <div class="sep"></div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generatePost()">
+      ✨ Generar Post con IA
+    </button>
+
+  </div>
+
+  <!-- PANEL DERECHO -->
+  <div class="panel-right">
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number" id="statTotal">0</div>
+        <div class="stat-label">Posts Generados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statHoy">0</div>
+        <div class="stat-label">Hoy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statCopied">0</div>
+        <div class="stat-label">Copiados</div>
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div class="output-area" id="outputArea">
+      <div class="output-placeholder" id="placeholder">
+        <div class="big-icon">🥘</div>
+        <div>Selecciona un hook y un platillo<br>luego haz clic en <strong style="color:var(--gold)">Generar Post</strong></div>
+      </div>
+
+      <div class="loading-spinner" id="spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-text">Creando tu post con IA…</div>
+      </div>
+
+      <div class="post-result" id="postResult">
+        <div class="post-meta">
+          <div class="post-avatar">I</div>
+          <div>
+            <div class="post-account">@inoxidablesdelnorte</div>
+            <div class="post-account-sub">Cocina Saludable · Acero T304</div>
+          </div>
+        </div>
+        <div class="post-text" id="postText"></div>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="action-row" id="actionRow" style="display:none;">
+      <button class="action-btn btn-copy" onclick="copyPost()">📋 Copiar Post</button>
+      <button class="action-btn btn-regen" onclick="generatePost()">🔄 Regenerar</button>
+      <button class="action-btn btn-whatsapp" onclick="sendWhatsApp()">💬 WhatsApp</button>
+    </div>
+
+    <!-- Tip -->
+    <div class="tip-box">
+      <strong>💡 Tip de contenido:</strong> Los posts que combinan un hook de <em>salud</em> con el beneficio del <em>acero T304</em> y un platillo familiar generan hasta 3× más engagement. Prueba diferentes tonos cada semana.
+    </div>
+
+    <!-- Historial -->
+    <div class="history-section">
+      <div class="section-title">📚 Últimos posts generados</div>
+      <div class="history-grid" id="historyGrid">
+        <div style="color:rgba(255,255,255,0.2); font-size:0.75rem; grid-column:1/-1;">
+          Los posts generados aparecerán aquí…
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== DATOS =====================
+const HOOKS = [
+  "¿Le estás dando toxinas a tu familia sin saberlo?",
+  "¿Sabes qué libera tu sartén cuando lo calientas?",
+  "¿Sigues cocinando con teflón rayado?",
+  "¿Tu cocina cuida o descuida tu salud?",
+  "¿Cuánto vale la salud de tu familia?",
+  "¿Ya sabes por qué los chefs eligen acero inoxidable?",
+  "¿Estás invirtiendo en salud o en gastos recurrentes?",
+  "¿Qué pasa cuando el teflón llega a alta temperatura?",
+  "¿Cuál es la diferencia entre cocinar bien y cocinar seguro?",
+  "¿Tu sartén tiene vida útil vencida?",
+  "Antes de encender la estufa, lee esto…",
+  "Cambia uno. Cambia todo.",
+  "Cocinar bien empieza antes de la receta.",
+  "Con el material correcto, cualquier platillo es obra de arte.",
+  "El mejor regalo para tu cocina no es una receta.",
+  "El secreto de la cocina saludable no está en los ingredientes.",
+  "El teflón se desgasta. El acero inoxidable, no.",
+  "Elegancia y salud en cada cocción.",
+  "En tu cocina también se toman decisiones de salud.",
+  "Esta es la inversión que tu cocina llevaba años esperando.",
+  "Hay cocinas que cuidan… y cocinas que enferman.",
+  "La calidad se siente desde el primer platillo.",
+  "La cocina que mereces existe.",
+  "Las mejores familias cocinan con los mejores utensilios.",
+  "Lo que cocinas importa. Cómo lo cocinas, también.",
+  "Lo que no ves en tu sartén puede estar en tu comida.",
+  "Los mejores cocineros del mundo tienen algo en común.",
+  "No todas las ollas son iguales.",
+  "No es solo cocinar. Es cuidar.",
+  "No es moda. Es una decisión inteligente.",
+  "Porque tu familia merece más que lo promedio.",
+  "Si cocinas todos los días, esto te importa.",
+  "Sin tóxicos. Sin riesgos. Sin compromisos.",
+  "Sube de nivel en tu cocina hoy.",
+  "Todo gran chef tiene un secreto. Descúbrelo.",
+  "Tu cocina habla de ti. ¿Qué dice hoy?",
+  "Tu salud no es negociable.",
+  "Una cocina premium es una cocina saludable.",
+  "Un buen utensilio dura más que diez baratos.",
+  "Vivirás mejor si cocinas mejor.",
+  "Cuando cuidas lo que comes, cuidas tu futuro."
+];
+
+const PLATILLOS = [
+  "Arroz con leche","Arroz rojo","Bistec a la mexicana","Caldo de pollo","Caldo de res",
+  "Camarones al mojo de ajo","Carnitas","Ceviche","Chiles en nogada","Chilaquiles",
+  "Chiles rellenos","Caldo tlalpeño","Crema de elote","Ejotes con crema",
+  "Enchiladas verdes","Enfrijoladas","Ensalada César","Espagueti a la boloñesa",
+  "Estofado de res","Fajitas de pollo","Fideo seco","Flautas de pollo","Guisado de lentejas",
+  "Huevos a la mexicana","Lomo en salsa","Macarrones con queso","Milanesa de res",
+  "Mole rojo","Molletes","Panuchos","Papas con chorizo","Pasta con camarones",
+  "Picadillo","Pipián verde","Pollo al ajillo","Pollo asado","Pozole rojo","Pozole verde",
+  "Puntas de filete","Quesadillas","Res en salsa verde","Sopa de lima","Sopa de tortilla",
+  "Sopa de verduras","Tacos de barbacoa","Tacos de canasta","Tamal de rajas",
+  "Tamales de elote","Tamales rojos","Tinga de pollo","Tortas de camarón"
+];
+
+const PRODUCTOS = [
+  "Juego completo de ollas (oferta mayo $14,500)",
+  "Sartén de acero T304",
+  "Tamalera 30L (de $27,000 a $19,900)",
+  "Olla express / presión",
+  "Vaporera de acero",
+  "Wok de acero inoxidable",
+  "Olla para caldo (6 litros)",
+  "Set de sartenes variados",
+  "Juego completo + portaespecias"
+];
+
+// Estado
+let selectedHook = "";
+let selectedPlatillo = "";
+let selectedProducto = "";
+let selectedTone = "educativo";
+let totalGenerated = 0;
+let todayGenerated = 0;
+let totalCopied = 0;
+let postHistory = [];
+let currentPost = "";
+
+// ===================== INIT =====================
+function init() {
+  populateList("hookList", HOOKS.sort(), "selectedHook", "hookVal", "hookTag");
+  populateList("platilloList", PLATILLOS.sort(), "selectedPlatillo", "platilloVal", "platilloTag");
+  populateList("productoList", PRODUCTOS, "selectedProducto", "productoVal", "productoTag");
+  startBannerRotation();
+}
+
+function populateList(listId, items, varName, valId, tagId) {
+  const list = document.getElementById(listId);
+  items.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "dropdown-item";
+    div.textContent = item;
+    div.onclick = () => {
+      window[varName] = item;
+      document.getElementById(valId).textContent = item.length > 36 ? item.slice(0,36)+"…" : item;
+      document.getElementById(tagId).innerHTML = `<span class="selected-tag">✓ ${item}</span>`;
+      closeAllDropdowns();
+    };
+    list.appendChild(div);
+  });
+}
+
+function toggleDropdown(listId, btn) {
+  closeAllDropdowns();
+  const list = document.getElementById(listId);
+  list.classList.toggle("open");
+  btn.classList.toggle("open");
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll(".dropdown-list").forEach(l => l.classList.remove("open"));
+  document.querySelectorAll(".fancy-btn").forEach(b => b.classList.remove("open"));
+}
+
+document.addEventListener("click", e => {
+  if (!e.target.closest(".fancy-select")) closeAllDropdowns();
+});
+
+function selectTone(btn, tone) {
+  document.querySelectorAll(".tone-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  selectedTone = tone;
+}
+
+// ===================== BANNER =====================
+let currentSlide = 0;
+const totalSlides = 3;
+let bannerTimer;
+
+function goSlide(n) {
+  document.querySelectorAll(".banner-slide")[currentSlide].classList.remove("active");
+  document.querySelectorAll(".banner-dot").forEach(d => d.classList.remove("active"));
+  currentSlide = n;
+  document.querySelectorAll(".banner-slide")[currentSlide].classList.add("active");
+  // update all dot groups
+  document.querySelectorAll(".banner-controls").forEach(group => {
+    group.querySelectorAll(".banner-dot").forEach((d,i) => {
+      d.classList.toggle("active", i === currentSlide);
+    });
+  });
+  resetBannerTimer();
+}
+
+function changeSlide(dir) {
+  goSlide((currentSlide + dir + totalSlides) % totalSlides);
+}
+
+function startBannerRotation() {
+  bannerTimer = setInterval(() => changeSlide(1), 6000);
+}
+
+function resetBannerTimer() {
+  clearInterval(bannerTimer);
+  startBannerTimer = setTimeout(() => startBannerRotation(), 500);
+}
+
+// ===================== GENERATE =====================
+async function generatePost() {
+  if (!selectedHook) { showToast("⚠️ Selecciona un hook primero"); return; }
+  if (!selectedPlatillo) { showToast("⚠️ Selecciona un platillo"); return; }
+
+  const btn = document.getElementById("generateBtn");
+  btn.disabled = true;
+
+  document.getElementById("placeholder").style.display = "none";
+  document.getElementById("postResult").classList.remove("visible");
+  document.getElementById("actionRow").style.display = "none";
+  document.getElementById("spinner").classList.add("visible");
+
+  const extra = document.getElementById("extraInput").value.trim();
+  const producto = selectedProducto || "Juego completo de ollas";
+
+  const toneMap = {
+    educativo: "informativo y educativo sobre los beneficios del acero T304",
+    emocional: "emotivo y cercano, apelando al amor familiar y el cuidado del hogar",
+    urgente: "urgente y con sentido de escasez u oferta limitada",
+    lujoso: "elegante, aspiracional y de lujo, estilo premium",
+    salud: "enfocado en salud, bienestar y nutrición familiar",
+    comparativo: "comparativo entre teflón y acero inoxidable T304, dejando claro quién gana"
+  };
+
+  const prompt = `Eres un experto en marketing de redes sociales para una marca mexicana de utensilios de cocina de acero inoxidable quirúrgico T304 llamada "Inoxidables del Norte".
+
+Crea un post para Instagram/Facebook con estas características:
+- Hook de apertura: "${selectedHook}"
+- Platillo que se va a preparar: "${selectedPlatillo}"
+- Producto destacado: "${producto}"
+- Tono: ${toneMap[selectedTone]}
+- Detalle extra del cliente: "${extra || 'ninguno'}"
+
+El post debe:
+1. Empezar exactamente con el hook dado
+2. Conectar el platillo con los beneficios del acero inoxidable T304 (no libera toxinas, no guarda bacterias, resiste altas temperaturas, dura años)
+3. Mencionar el producto de forma natural
+4. Tener máximo 220 palabras
+5. Incluir 3-5 emojis relevantes distribuidos naturalmente
+6. Terminar con un llamado a la acción que incluya: "📲 Escríbenos por WhatsApp: 811 038 4426" y si es oferta mencionar también "52 2214282564"
+7. Incluir al final 3-5 hashtags relevantes como #AceroInoxidable #CocinaSaludable #InoxidablesDelNorte
+
+Responde ÚNICAMENTE con el texto del post, sin comillas, sin introducción, sin explicaciones.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.find(b => b.type === "text")?.text || "Error al generar el post.";
+
+    currentPost = text;
+    document.getElementById("postText").textContent = text;
+    document.getElementById("spinner").classList.remove("visible");
+    document.getElementById("postResult").classList.add("visible");
+    document.getElementById("actionRow").style.display = "flex";
+
+    totalGenerated++;
+    todayGenerated++;
+    updateStats();
+    addToHistory(text);
+    showToast("✨ Post generado con éxito");
+
+  } catch (err) {
+    document.getElementById("spinner").classList.remove("visible");
+    document.getElementById("placeholder").style.display = "flex";
+    showToast("❌ Error al conectar con la IA");
+    console.error(err);
+  }
+
+  btn.disabled = false;
+}
+
+function updateStats() {
+  document.getElementById("statTotal").textContent = totalGenerated;
+  document.getElementById("statHoy").textContent = todayGenerated;
+  document.getElementById("statCopied").textContent = totalCopied;
+}
+
+function addToHistory(text) {
+  const preview = text.slice(0, 90) + "…";
+  postHistory.unshift({ hook: selectedHook, platillo: selectedPlatillo, preview });
+  if (postHistory.length > 6) postHistory.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const grid = document.getElementById("historyGrid");
+  grid.innerHTML = "";
+  postHistory.forEach((item, i) => {
+    const card = document.createElement("div");
+    card.className = "history-card";
+    card.innerHTML = `
+      <div class="history-badge">${item.platillo.slice(0,18)}</div><br>
+      ${item.preview}
+    `;
+    card.onclick = () => {
+      document.getElementById("postText").textContent = postHistory[i].preview + "\n\n[Ver post completo — regenera para texto completo]";
+      document.getElementById("postResult").classList.add("visible");
+      document.getElementById("placeholder").style.display = "none";
+      document.getElementById("actionRow").style.display = "flex";
+    };
+    grid.appendChild(card);
+  });
+}
+
+function copyPost() {
+  if (!currentPost) return;
+  navigator.clipboard.writeText(currentPost).then(() => {
+    totalCopied++;
+    updateStats();
+    showToast("📋 Post copiado al portapapeles");
+  });
+}
+
+function sendWhatsApp() {
+  if (!currentPost) return;
+  const msg = encodeURIComponent(currentPost);
+  window.open(`https://wa.me/528110384426?text=${msg}`, "_blank");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+init();
+</script>
+</body>
+</html>
