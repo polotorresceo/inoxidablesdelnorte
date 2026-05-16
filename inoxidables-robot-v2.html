@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot de Posts — Inoxidables del Norte</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #c9a84c; --gold-light: #f0d080; --gold-dark: #8a6a1a;
+  --dark: #1a1208; --dark2: #221a0a; --dark3: #2e2010;
+  --steel: #8ab4c8; --cream: #f7f0e0;
+  --green: #1e5c38; --green-light: #2d8a55;
+  --red: #c0392b; --white: #fff;
+  --shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--dark);
+  font-family: 'Montserrat', sans-serif;
+  color: var(--cream);
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 10% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(30,92,56,0.08) 0%, transparent 50%);
+}
+
+/* ===== ADMIN PANEL ===== */
+.admin-bar {
+  background: rgba(0,0,0,0.6);
+  border-bottom: 1px solid rgba(201,168,76,0.25);
+  padding: 0;
+  position: relative;
+}
+.admin-bar-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-bar-toggle .lock-icon { font-size: 0.9rem; }
+.admin-bar-toggle .arrow-adm { margin-left: auto; transition: transform 0.25s; }
+.admin-bar-toggle.open .arrow-adm { transform: rotate(180deg); }
+
+.admin-panel {
+  display: none;
+  padding: 0 20px 20px;
+  animation: fadeIn 0.2s ease;
+}
+.admin-panel.open { display: block; }
+
+.admin-login {
+  max-width: 320px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 16px 0;
+}
+.admin-login input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--cream);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  outline: none;
+  text-align: center;
+  letter-spacing: 0.2em;
+  margin-bottom: 10px;
+}
+.admin-login input:focus { border-color: var(--gold); }
+.admin-login-btn {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  border: none; color: var(--dark); padding: 10px 28px;
+  border-radius: 6px; font-family: 'Montserrat', sans-serif;
+  font-weight: 700; font-size: 0.78rem; letter-spacing: 0.1em;
+  text-transform: uppercase; cursor: pointer;
+}
+.admin-login-btn:hover { opacity: 0.9; }
+.admin-login-error {
+  color: #e74c3c; font-size: 0.72rem; margin-top: 6px; display: none;
+}
+
+.admin-content { display: none; }
+.admin-content.open { display: block; }
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 16px;
+}
+@media(max-width:700px){ .admin-grid { grid-template-columns: 1fr; } }
+
+.admin-section-title {
+  font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.admin-section-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: rgba(201,168,76,0.25);
+}
+
+/* Banner upload */
+.banner-slots { display: flex; flex-direction: column; gap: 10px; }
+.banner-slot {
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(201,168,76,0.3);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.banner-slot-num {
+  background: rgba(201,168,76,0.2);
+  color: var(--gold);
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.75rem;
+  flex-shrink: 0;
+}
+.banner-slot input[type="text"] {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(201,168,76,0.2);
+  color: var(--cream); padding: 8px 12px;
+  border-radius: 5px; font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem; outline: none;
+}
+.banner-slot input[type="text"]:focus { border-color: var(--gold); }
+.banner-slot input[type="text"]::placeholder { color: rgba(255,255,255,0.25); font-style: italic; }
+.banner-apply-btn {
+  background: rgba(201,168,76,0.18);
+  border: 1px solid rgba(201,168,76,0.4);
+  color: var(--gold-light); padding: 8px 14px;
+  border-radius: 5px; font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem; font-weight: 700; cursor: pointer;
+  white-space: nowrap; letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.banner-apply-btn:hover { background: rgba(201,168,76,0.3); }
+
+/* Partner form */
+.partner-form { display: flex; flex-direction: column; gap: 10px; }
+.partner-field {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.partner-field label {
+  font-size: 0.63rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: rgba(255,255,255,0.45);
+}
+.partner-field input {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(201,168,76,0.2);
+  color: var(--cream); padding: 9px 12px;
+  border-radius: 6px; font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem; outline: none;
+}
+.partner-field input:focus { border-color: var(--gold); }
+.partner-field input::placeholder { color: rgba(255,255,255,0.25); }
+.partner-save-btn {
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  border: none; color: var(--white);
+  padding: 11px 20px; border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700; font-size: 0.78rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; margin-top: 4px;
+}
+.partner-save-btn:hover { opacity: 0.9; }
+
+.partner-card {
+  background: rgba(30,92,56,0.12);
+  border: 1px solid rgba(45,138,85,0.3);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 10px;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  display: none;
+}
+.partner-card.visible { display: block; }
+.partner-card strong { color: var(--green-light); }
+
+/* ===== BANNER ROTATIVO ===== */
+.banner-section {
+  position: relative; width: 100%;
+  overflow: hidden; border-bottom: 2px solid var(--gold-dark);
+}
+.banner-slide { display: none; width: 100%; position: relative; }
+.banner-slide.active { display: block; animation: fadeIn 0.8s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.banner-slide img {
+  width: 100%; max-height: 400px; object-fit: cover; display: block;
+}
+.banner-placeholder-img {
+  height: 200px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; color: rgba(255,255,255,0.3);
+  font-style: italic;
+}
+.banner-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  padding: 14px 22px;
+  display: flex; justify-content: space-between; align-items: flex-end;
+}
+.banner-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem; color: var(--gold-light); font-style: italic;
+}
+.banner-controls { display: flex; gap: 8px; }
+.banner-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  cursor: pointer; border: none; transition: background 0.3s;
+}
+.banner-dot.active { background: var(--gold); }
+.banner-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(0,0,0,0.5); border: 1px solid var(--gold-dark);
+  color: var(--gold); width: 38px; height: 38px;
+  border-radius: 50%; cursor: pointer; font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; z-index: 10;
+}
+.banner-nav:hover { background: var(--gold-dark); color: var(--white); }
+.banner-prev { left: 12px; }
+.banner-next { right: 12px; }
+
+/* ===== HEADER ===== */
+.header { text-align: center; padding: 30px 20px 16px; }
+.header-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  font-weight: 700; color: var(--gold);
+  text-shadow: 0 0 30px rgba(201,168,76,0.4);
+}
+.header-logo span { font-style: italic; font-weight: 400; }
+.header-sub {
+  font-size: 0.7rem; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--steel); margin-top: 4px;
+}
+.gold-line {
+  width: 80px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 10px auto;
+}
+
+/* Partner display bar */
+.partner-bar {
+  background: rgba(30,92,56,0.15);
+  border-top: 1px solid rgba(45,138,85,0.2);
+  border-bottom: 1px solid rgba(45,138,85,0.2);
+  padding: 8px 20px;
+  font-size: 0.73rem;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  display: none;
+}
+.partner-bar.visible { display: block; }
+.partner-bar strong { color: var(--green-light); }
+
+/* ===== MAIN GRID ===== */
+.main-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 0;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+@media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* ===== PANEL IZQUIERDO ===== */
+.panel-left {
+  background: rgba(255,255,255,0.03);
+  border-right: 1px solid rgba(201,168,76,0.2);
+  padding: 24px 20px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.section-title {
+  font-size: 0.63rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--gold);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: rgba(201,168,76,0.3);
+}
+
+/* Dropdown */
+.fancy-select { position: relative; width: 100%; }
+.fancy-btn {
+  width: 100%;
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--cream); padding: 11px 16px;
+  border-radius: 6px; font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem; cursor: pointer; text-align: left;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: all 0.2s;
+}
+.fancy-btn:hover { border-color: var(--gold); background: rgba(201,168,76,0.14); }
+.fancy-btn .arrow { font-size: 0.7rem; color: var(--gold); transition: transform 0.2s; }
+.fancy-btn.open .arrow { transform: rotate(180deg); }
+.dropdown-list {
+  display: none; position: absolute;
+  top: calc(100% + 4px); left: 0; right: 0;
+  background: #1e1608;
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 6px; max-height: 260px;
+  overflow-y: auto; z-index: 200;
+  box-shadow: var(--shadow);
+}
+.dropdown-list.open { display: block; animation: slideDown 0.15s ease; }
+@keyframes slideDown { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+.dropdown-list::-webkit-scrollbar { width: 4px; }
+.dropdown-list::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+.dropdown-item {
+  padding: 9px 16px; font-size: 0.8rem; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.15s; color: var(--cream); line-height: 1.4;
+}
+.dropdown-item:hover { background: rgba(201,168,76,0.15); color: var(--gold-light); }
+.dropdown-item:last-child { border-bottom: none; }
+
+.selected-tag {
+  display: inline-block;
+  background: rgba(201,168,76,0.18);
+  border: 1px solid rgba(201,168,76,0.5);
+  color: var(--gold-light); font-size: 0.7rem;
+  padding: 4px 10px; border-radius: 20px;
+  margin: 4px 4px 0 0; max-width: 100%; word-break: break-word;
+}
+
+/* Tono */
+.tone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tone-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(201,168,76,0.2);
+  color: var(--cream); padding: 8px 6px;
+  border-radius: 6px; font-size: 0.72rem;
+  cursor: pointer; text-align: center;
+  transition: all 0.2s; font-family: 'Montserrat', sans-serif;
+}
+.tone-btn:hover, .tone-btn.active {
+  background: rgba(201,168,76,0.2);
+  border-color: var(--gold); color: var(--gold-light);
+}
+
+.extra-input {
+  width: 100%; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(201,168,76,0.25);
+  color: var(--cream); padding: 10px 14px;
+  border-radius: 6px; font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem; outline: none; transition: border 0.2s; resize: none;
+}
+.extra-input:focus { border-color: var(--gold); }
+.extra-input::placeholder { color: rgba(255,255,255,0.3); font-style: italic; }
+
+.cta-info {
+  background: rgba(30,92,56,0.15);
+  border: 1px solid rgba(45,138,85,0.3);
+  border-radius: 6px; padding: 12px 14px;
+  font-size: 0.75rem; line-height: 1.6;
+}
+.cta-info strong { color: var(--green-light); }
+
+.generate-btn {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-dark));
+  background-size: 200% 200%;
+  border: none; border-radius: 8px; color: var(--dark);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800; font-size: 0.85rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.3s;
+  animation: shimmer 3s infinite;
+}
+@keyframes shimmer {
+  0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}
+}
+.generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(201,168,76,0.5); }
+.generate-btn:active { transform: translateY(0); }
+.generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ===== PANEL DERECHO ===== */
+.panel-right { padding: 24px 24px 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.stat-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(201,168,76,0.15);
+  border-radius: 8px; padding: 14px; text-align: center;
+}
+.stat-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem; font-weight: 700; color: var(--gold); line-height: 1;
+}
+.stat-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+.output-area {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 10px; min-height: 300px; position: relative; overflow: hidden;
+}
+.output-placeholder {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px; color: rgba(255,255,255,0.2);
+  font-size: 0.8rem; text-align: center; padding: 20px;
+}
+.output-placeholder .big-icon { font-size: 3rem; opacity: 0.3; }
+.post-result { display: none; padding: 28px; animation: fadeIn 0.5s ease; }
+.post-result.visible { display: block; }
+.post-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.post-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-dark), var(--green));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; font-weight: 700; color: var(--gold-light);
+  font-family: 'Cormorant Garamond', serif; flex-shrink: 0;
+}
+.post-account { font-weight: 700; font-size: 0.85rem; }
+.post-account-sub { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
+.post-text {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 18px;
+  font-size: 0.88rem; line-height: 1.8;
+  white-space: pre-wrap; color: var(--cream); min-height: 160px;
+}
+.loading-spinner {
+  display: none; position: absolute; inset: 0;
+  background: rgba(26,18,8,0.85);
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px; z-index: 20;
+}
+.loading-spinner.visible { display: flex; }
+.spinner-ring {
+  width: 48px; height: 48px;
+  border: 3px solid rgba(201,168,76,0.2);
+  border-top-color: var(--gold); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+.spinner-text { font-size: 0.78rem; color: var(--gold-light); letter-spacing: 0.1em; font-style: italic; }
+
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.action-btn {
+  padding: 10px 18px; border-radius: 6px;
+  font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.06em; transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px; text-transform: uppercase;
+}
+.btn-copy { background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.4); color: var(--gold-light); }
+.btn-copy:hover { background: rgba(201,168,76,0.3); }
+.btn-regen { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: var(--cream); }
+.btn-regen:hover { background: rgba(255,255,255,0.1); }
+.btn-whatsapp { background: rgba(37,211,102,0.15); border: 1px solid rgba(37,211,102,0.35); color: #25d366; }
+.btn-whatsapp:hover { background: rgba(37,211,102,0.25); }
+
+.history-section { margin-top: 4px; }
+.history-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 10px; margin-top: 10px; }
+.history-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 12px;
+  font-size: 0.72rem; line-height: 1.5; cursor: pointer;
+  transition: all 0.2s; color: rgba(255,255,255,0.6);
+}
+.history-card:hover { border-color: rgba(201,168,76,0.4); color: var(--cream); background: rgba(201,168,76,0.05); }
+.history-badge {
+  font-size: 0.6rem;
+  background: rgba(201,168,76,0.2); color: var(--gold);
+  padding: 2px 7px; border-radius: 20px;
+  display: inline-block; margin-bottom: 6px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.tip-box {
+  background: rgba(201,168,76,0.06);
+  border-left: 3px solid var(--gold-dark);
+  padding: 12px 16px; border-radius: 0 6px 6px 0;
+  font-size: 0.75rem; line-height: 1.6; color: rgba(255,255,255,0.55);
+}
+.tip-box strong { color: var(--gold-light); }
+.sep { height: 1px; background: rgba(201,168,76,0.1); margin: 4px 0; }
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--green); color: var(--white);
+  padding: 12px 20px; border-radius: 8px;
+  font-size: 0.82rem; font-weight: 600;
+  opacity: 0; transform: translateY(10px);
+  transition: all 0.3s; z-index: 999; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ===== ADMIN BAR ===== -->
+<div class="admin-bar">
+  <button class="admin-bar-toggle" id="adminToggle" onclick="toggleAdmin()">
+    <span class="lock-icon">🔐</span>
+    Panel de Administrador
+    <span class="arrow-adm">▼</span>
+  </button>
+  <div class="admin-panel" id="adminPanel">
+
+    <!-- LOGIN -->
+    <div class="admin-login" id="adminLogin">
+      <div style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-bottom:10px;">Ingresa tu contraseña de administrador</div>
+      <input type="password" id="adminPwInput" placeholder="••••••" maxlength="10"
+        onkeydown="if(event.key==='Enter') checkAdminPw()">
+      <br>
+      <button class="admin-login-btn" onclick="checkAdminPw()">🔓 Entrar</button>
+      <div class="admin-login-error" id="adminError">Contraseña incorrecta</div>
+    </div>
+
+    <!-- CONTENIDO ADMIN (oculto hasta autenticar) -->
+    <div class="admin-content" id="adminContent">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <div style="font-size:0.7rem; color:var(--green-light); font-weight:700;">✅ Sesión de administrador activa</div>
+        <button onclick="logoutAdmin()" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:0.68rem;cursor:pointer;text-decoration:underline;">Cerrar sesión</button>
+      </div>
+      <div class="admin-grid">
+
+        <!-- BANNERS -->
+        <div>
+          <div class="admin-section-title">🖼️ Cargar Banners (imgbb URL)</div>
+          <div class="banner-slots">
+            <div class="banner-slot">
+              <div class="banner-slot-num">1</div>
+              <input type="text" id="bannerUrl0" placeholder="https://i.ibb.co/xxxxx/banner1.jpg">
+              <button class="banner-apply-btn" onclick="applyBanner(0)">Aplicar</button>
+            </div>
+            <div class="banner-slot">
+              <div class="banner-slot-num">2</div>
+              <input type="text" id="bannerUrl1" placeholder="https://i.ibb.co/xxxxx/banner2.jpg">
+              <button class="banner-apply-btn" onclick="applyBanner(1)">Aplicar</button>
+            </div>
+            <div class="banner-slot">
+              <div class="banner-slot-num">3</div>
+              <input type="text" id="bannerUrl2" placeholder="https://i.ibb.co/xxxxx/banner3.jpg">
+              <button class="banner-apply-btn" onclick="applyBanner(2)">Aplicar</button>
+            </div>
+          </div>
+          <div style="font-size:0.65rem; color:rgba(255,255,255,0.3); margin-top:8px; line-height:1.5;">
+            Copia la URL directa de imgbb (termina en .jpg/.png) y presiona Aplicar para actualizar el banner correspondiente.
+          </div>
+        </div>
+
+        <!-- PARTNER INFO -->
+        <div>
+          <div class="admin-section-title">👤 Datos del Partner / Distribuidora</div>
+          <div class="partner-form">
+            <div class="partner-field">
+              <label>Nombre completo</label>
+              <input type="text" id="partnerName" placeholder="Ej: María González">
+            </div>
+            <div class="partner-field">
+              <label>WhatsApp (con código de país)</label>
+              <input type="text" id="partnerWA" placeholder="Ej: 522214282564">
+            </div>
+            <div class="partner-field">
+              <label>Correo Gmail</label>
+              <input type="email" id="partnerEmail" placeholder="nombre@gmail.com">
+            </div>
+            <button class="partner-save-btn" onclick="savePartner()">💾 Guardar y Activar</button>
+          </div>
+          <div class="partner-card" id="partnerCard"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== BANNER ROTATIVO ===== -->
+<div class="banner-section">
+  <div class="banner-slide active" id="slide0">
+    <img id="bannerImg0"
+      src="https://i.ibb.co/6cfd6sPN/Gemini-Generated-Image-yiel6syiel6syiel.png"
+      alt="Banner 1 — Inoxidables del Norte"
+      onerror="this.style.display='none';document.getElementById('bannerFb0').style.display='flex'">
+    <div id="bannerFb0" class="banner-placeholder-img" style="display:none; background:linear-gradient(135deg,#1a1208,#2e2010);">
+      🖼️ Banner 1 — Carga tu imagen desde el panel admin
+    </div>
+    <div class="banner-overlay">
+      <span class="banner-label" id="bannerLbl0">🌟 Oferta Mayo — $14,500</span>
+      <div class="banner-controls" id="ctrl0">
+        <button class="banner-dot active" onclick="goSlide(0)"></button>
+        <button class="banner-dot" onclick="goSlide(1)"></button>
+        <button class="banner-dot" onclick="goSlide(2)"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="banner-slide" id="slide1">
+    <div id="bannerImgWrap1">
+      <div class="banner-placeholder-img" id="bannerFb1"
+        style="background:linear-gradient(135deg,#0e2918,#1a3a20);">
+        🖼️ Banner 2 — Carga tu imagen desde el panel admin
+      </div>
+    </div>
+    <div class="banner-overlay">
+      <span class="banner-label" id="bannerLbl1">✨ Acero Quirúrgico T304 — Sin Tóxicos</span>
+      <div class="banner-controls" id="ctrl1">
+        <button class="banner-dot" onclick="goSlide(0)"></button>
+        <button class="banner-dot active" onclick="goSlide(1)"></button>
+        <button class="banner-dot" onclick="goSlide(2)"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="banner-slide" id="slide2">
+    <div id="bannerImgWrap2">
+      <div class="banner-placeholder-img" id="bannerFb2"
+        style="background:linear-gradient(135deg,#1a1208,#3a2a0a);">
+        🖼️ Banner 3 — Carga tu imagen desde el panel admin
+      </div>
+    </div>
+    <div class="banner-overlay">
+      <span class="banner-label" id="bannerLbl2">📲 Contáctanos — 52 2214282564</span>
+      <div class="banner-controls" id="ctrl2">
+        <button class="banner-dot" onclick="goSlide(0)"></button>
+        <button class="banner-dot" onclick="goSlide(1)"></button>
+        <button class="banner-dot active" onclick="goSlide(2)"></button>
+      </div>
+    </div>
+  </div>
+
+  <button class="banner-nav banner-prev" onclick="changeSlide(-1)">‹</button>
+  <button class="banner-nav banner-next" onclick="changeSlide(1)">›</button>
+</div>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div class="header-logo">∞ Inoxidables <span>del Norte</span></div>
+  <div class="header-sub">Robot de Creación de Posts • Cocina Saludable</div>
+  <div class="gold-line"></div>
+</div>
+
+<!-- Partner bar -->
+<div class="partner-bar" id="partnerBar"></div>
+
+<!-- ===== MAIN ===== -->
+<div class="main-grid">
+
+  <!-- LEFT PANEL -->
+  <div class="panel-left">
+
+    <div>
+      <div class="section-title">🎣 Hook de apertura</div>
+      <div class="fancy-select">
+        <button class="fancy-btn" id="hookBtn" onclick="toggleDropdown('hookList','hookBtn')">
+          <span id="hookVal">Seleccionar hook…</span>
+          <span class="arrow">▼</span>
+        </button>
+        <div class="dropdown-list" id="hookList"></div>
+      </div>
+      <div id="hookTag"></div>
+    </div>
+
+    <div>
+      <div class="section-title">🍽️ Platillo a preparar</div>
+      <div class="fancy-select">
+        <button class="fancy-btn" id="platilloBtn" onclick="toggleDropdown('platilloList','platilloBtn')">
+          <span id="platilloVal">Seleccionar platillo…</span>
+          <span class="arrow">▼</span>
+        </button>
+        <div class="dropdown-list" id="platilloList"></div>
+      </div>
+      <div id="platilloTag"></div>
+    </div>
+
+    <div>
+      <div class="section-title">🥘 Producto Inoxidables</div>
+      <div class="fancy-select">
+        <button class="fancy-btn" id="productoBtn" onclick="toggleDropdown('productoList','productoBtn')">
+          <span id="productoVal">Seleccionar producto…</span>
+          <span class="arrow">▼</span>
+        </button>
+        <div class="dropdown-list" id="productoList"></div>
+      </div>
+      <div id="productoTag"></div>
+    </div>
+
+    <div>
+      <div class="section-title">🎨 Tono del post</div>
+      <div class="tone-grid">
+        <button class="tone-btn active" onclick="selectTone(this,'educativo')">🎓 Educativo</button>
+        <button class="tone-btn" onclick="selectTone(this,'emocional')">💛 Emocional</button>
+        <button class="tone-btn" onclick="selectTone(this,'urgente')">🔥 Urgente</button>
+        <button class="tone-btn" onclick="selectTone(this,'lujoso')">✨ Lujoso</button>
+        <button class="tone-btn" onclick="selectTone(this,'salud')">💚 Salud</button>
+        <button class="tone-btn" onclick="selectTone(this,'comparativo')">⚖️ Comparativo</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">✏️ Detalle extra (opcional)</div>
+      <textarea class="extra-input" id="extraInput" rows="2"
+        placeholder="Ej: destacar la oferta de mayo, mencionar la tamalera…"></textarea>
+    </div>
+
+    <div class="cta-info" id="ctaInfo">
+      <strong>📲 CTA automático:</strong><br>
+      WhatsApp: <strong id="ctaNumber">52 2214282564</strong>
+    </div>
+
+    <div class="sep"></div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generatePost()">
+      ✨ Generar Post con IA
+    </button>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel-right">
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number" id="statTotal">0</div>
+        <div class="stat-label">Posts Generados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statHoy">0</div>
+        <div class="stat-label">Esta Sesión</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statCopied">0</div>
+        <div class="stat-label">Copiados</div>
+      </div>
+    </div>
+
+    <div class="output-area" id="outputArea">
+      <div class="output-placeholder" id="placeholder">
+        <div class="big-icon">🥘</div>
+        <div>Selecciona un <strong style="color:var(--gold)">hook</strong> y un <strong style="color:var(--gold)">platillo</strong><br>luego presiona Generar Post</div>
+      </div>
+      <div class="loading-spinner" id="spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-text">Creando tu post con IA…</div>
+      </div>
+      <div class="post-result" id="postResult">
+        <div class="post-meta">
+          <div class="post-avatar">I</div>
+          <div>
+            <div class="post-account" id="postAccountName">@inoxidablesdelnorte</div>
+            <div class="post-account-sub">Cocina Saludable · Acero T304</div>
+          </div>
+        </div>
+        <div class="post-text" id="postText"></div>
+      </div>
+    </div>
+
+    <div class="action-row" id="actionRow" style="display:none;">
+      <button class="action-btn btn-copy" onclick="copyPost()">📋 Copiar Post</button>
+      <button class="action-btn btn-regen" onclick="generatePost()">🔄 Regenerar</button>
+      <button class="action-btn btn-whatsapp" onclick="sendWhatsApp()">💬 WhatsApp</button>
+    </div>
+
+    <div class="tip-box">
+      <strong>💡 Tip:</strong> Los posts con hook de salud + platillo familiar generan hasta 3× más engagement. Alterna tonos cada semana para mantener la audiencia activa.
+    </div>
+
+    <div class="history-section">
+      <div class="section-title">📚 Últimos posts generados</div>
+      <div class="history-grid" id="historyGrid">
+        <div style="color:rgba(255,255,255,0.2);font-size:0.75rem;grid-column:1/-1;">
+          Los posts generados aparecerán aquí…
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  STATE — objeto central (evita bug window[varName] con let)
+// ============================================================
+const S = {
+  hook: "",
+  platillo: "",
+  producto: "",
+  tone: "educativo",
+  totalGenerated: 0,
+  todayGenerated: 0,
+  totalCopied: 0,
+  currentPost: "",
+  history: [],
+  partnerWA: "522214282564",    // número por defecto
+  partnerName: "",
+  adminUnlocked: false
+};
+
+// ============================================================
+//  DATOS
+// ============================================================
+const HOOKS = [
+  "¿Le estás dando toxinas a tu familia sin saberlo?",
+  "¿Sabes qué libera tu sartén cuando lo calientas?",
+  "¿Sigues cocinando con teflón rayado?",
+  "¿Tu cocina cuida o descuida tu salud?",
+  "¿Cuánto vale la salud de tu familia?",
+  "¿Ya sabes por qué los chefs eligen acero inoxidable?",
+  "¿Estás invirtiendo en salud o en gastos recurrentes?",
+  "¿Qué pasa cuando el teflón llega a alta temperatura?",
+  "¿Cuál es la diferencia entre cocinar bien y cocinar seguro?",
+  "¿Tu sartén tiene vida útil vencida?",
+  "Antes de encender la estufa, lee esto…",
+  "Cambia uno. Cambia todo.",
+  "Cocinar bien empieza antes de la receta.",
+  "Con el material correcto, cualquier platillo es obra de arte.",
+  "El mejor regalo para tu cocina no es una receta.",
+  "El secreto de la cocina saludable no está en los ingredientes.",
+  "El teflón se desgasta. El acero inoxidable, no.",
+  "Elegancia y salud en cada cocción.",
+  "En tu cocina también se toman decisiones de salud.",
+  "Esta es la inversión que tu cocina llevaba años esperando.",
+  "Hay cocinas que cuidan… y cocinas que enferman.",
+  "La calidad se siente desde el primer platillo.",
+  "La cocina que mereces existe.",
+  "Las mejores familias cocinan con los mejores utensilios.",
+  "Lo que cocinas importa. Cómo lo cocinas, también.",
+  "Lo que no ves en tu sartén puede estar en tu comida.",
+  "Los mejores cocineros del mundo tienen algo en común.",
+  "No todas las ollas son iguales.",
+  "No es solo cocinar. Es cuidar.",
+  "No es moda. Es una decisión inteligente.",
+  "Porque tu familia merece más que lo promedio.",
+  "Si cocinas todos los días, esto te importa.",
+  "Sin tóxicos. Sin riesgos. Sin compromisos.",
+  "Sube de nivel en tu cocina hoy.",
+  "Todo gran chef tiene un secreto. Descúbrelo.",
+  "Tu cocina habla de ti. ¿Qué dice hoy?",
+  "Tu salud no es negociable.",
+  "Una cocina premium es una cocina saludable.",
+  "Un buen utensilio dura más que diez baratos.",
+  "Vivirás mejor si cocinas mejor.",
+  "Cuando cuidas lo que comes, cuidas tu futuro."
+];
+
+const PLATILLOS = [
+  "Arroz con leche","Arroz rojo","Bistec a la mexicana","Caldo de pollo","Caldo de res",
+  "Camarones al mojo de ajo","Carnitas","Ceviche","Chiles en nogada","Chilaquiles",
+  "Chiles rellenos","Caldo tlalpeño","Crema de elote","Ejotes con crema",
+  "Enchiladas verdes","Enfrijoladas","Ensalada César","Espagueti a la boloñesa",
+  "Estofado de res","Fajitas de pollo","Fideo seco","Flautas de pollo",
+  "Guisado de lentejas","Huevos a la mexicana","Lomo en salsa","Macarrones con queso",
+  "Milanesa de res","Mole rojo","Molletes","Panuchos","Papas con chorizo",
+  "Pasta con camarones","Picadillo","Pipián verde","Pollo al ajillo","Pollo asado",
+  "Pozole rojo","Pozole verde","Puntas de filete","Quesadillas","Res en salsa verde",
+  "Sopa de lima","Sopa de tortilla","Sopa de verduras","Tacos de barbacoa",
+  "Tacos de canasta","Tamal de rajas","Tamales de elote","Tamales rojos",
+  "Tinga de pollo","Tortas de camarón"
+];
+
+const PRODUCTOS = [
+  "Juego completo de ollas (oferta mayo $14,500)",
+  "Sartén de acero T304",
+  "Tamalera 30L (de $27,000 a $19,900)",
+  "Olla express / presión",
+  "Vaporera de acero",
+  "Wok de acero inoxidable",
+  "Olla para caldo (6 litros)",
+  "Set de sartenes variados",
+  "Juego completo + portaespecias"
+];
+
+// ============================================================
+//  INIT
+// ============================================================
+function init() {
+  buildDropdown("hookList", "hookBtn", "hookVal", "hookTag", HOOKS.slice().sort(), "hook");
+  buildDropdown("platilloList", "platilloBtn", "platilloVal", "platilloTag", PLATILLOS.slice().sort(), "platillo");
+  buildDropdown("productoList", "productoBtn", "productoVal", "productoTag", PRODUCTOS, "producto");
+  startBannerRotation();
+  // Precargar banner 0 con imagen por defecto
+  document.getElementById("bannerUrl0").value = "https://i.ibb.co/6cfd6sPN/Gemini-Generated-Image-yiel6syiel6syiel.png";
+}
+
+// ============================================================
+//  DROPDOWN — usa S[key] en lugar de window[varName]
+// ============================================================
+function buildDropdown(listId, btnId, valId, tagId, items, stateKey) {
+  const list = document.getElementById(listId);
+  items.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "dropdown-item";
+    div.textContent = item;
+    div.addEventListener("click", () => {
+      S[stateKey] = item;                                          // ✅ asignación directa al objeto S
+      document.getElementById(valId).textContent = item.length > 36 ? item.slice(0,36)+"…" : item;
+      document.getElementById(tagId).innerHTML =
+        `<span class="selected-tag">✓ ${item}</span>`;
+      closeAllDropdowns();
+    });
+    list.appendChild(div);
+  });
+}
+
+function toggleDropdown(listId, btnId) {
+  const isOpen = document.getElementById(listId).classList.contains("open");
+  closeAllDropdowns();
+  if (!isOpen) {
+    document.getElementById(listId).classList.add("open");
+    document.getElementById(btnId).classList.add("open");
+  }
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll(".dropdown-list").forEach(l => l.classList.remove("open"));
+  document.querySelectorAll(".fancy-btn").forEach(b => b.classList.remove("open"));
+}
+
+document.addEventListener("click", e => {
+  if (!e.target.closest(".fancy-select") && !e.target.closest(".dropdown-list")) closeAllDropdowns();
+});
+
+function selectTone(btn, tone) {
+  document.querySelectorAll(".tone-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  S.tone = tone;
+}
+
+// ============================================================
+//  ADMIN
+// ============================================================
+function toggleAdmin() {
+  const panel = document.getElementById("adminPanel");
+  const toggle = document.getElementById("adminToggle");
+  panel.classList.toggle("open");
+  toggle.classList.toggle("open");
+}
+
+function checkAdminPw() {
+  const pw = document.getElementById("adminPwInput").value;
+  if (pw === "5366") {
+    S.adminUnlocked = true;
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminContent").classList.add("open");
+    document.getElementById("adminError").style.display = "none";
+  } else {
+    document.getElementById("adminError").style.display = "block";
+    document.getElementById("adminPwInput").value = "";
+  }
+}
+
+function logoutAdmin() {
+  S.adminUnlocked = false;
+  document.getElementById("adminLogin").style.display = "block";
+  document.getElementById("adminContent").classList.remove("open");
+  document.getElementById("adminPwInput").value = "";
+  document.getElementById("adminPanel").classList.remove("open");
+  document.getElementById("adminToggle").classList.remove("open");
+}
+
+// Aplicar banner por slot
+function applyBanner(index) {
+  const url = document.getElementById(`bannerUrl${index}`).value.trim();
+  if (!url) { showToast("⚠️ Ingresa una URL primero"); return; }
+
+  const slide = document.getElementById(`slide${index}`);
+  const fb = document.getElementById(`bannerFb${index}`);
+
+  // Slide 0 tiene un <img> estático; slides 1 y 2 tienen un div wrapper
+  if (index === 0) {
+    const img = document.getElementById("bannerImg0");
+    img.style.display = "block";
+    img.src = url;
+    img.onerror = () => {
+      img.style.display = "none";
+      fb.style.display = "flex";
+      showToast("❌ No se pudo cargar la imagen");
+    };
+    img.onload = () => { fb.style.display = "none"; };
+  } else {
+    const wrap = document.getElementById(`bannerImgWrap${index}`);
+    fb.style.display = "none";
+    let img = wrap.querySelector("img");
+    if (!img) {
+      img = document.createElement("img");
+      img.style.cssText = "width:100%;max-height:400px;object-fit:cover;display:block;";
+      wrap.insertBefore(img, fb);
+    }
+    img.src = url;
+    img.onload = () => {};
+    img.onerror = () => {
+      img.style.display = "none";
+      fb.style.display = "flex";
+      showToast("❌ No se pudo cargar la imagen");
+    };
+  }
+  showToast(`✅ Banner ${index + 1} actualizado`);
+}
+
+// Guardar partner
+function savePartner() {
+  const name  = document.getElementById("partnerName").value.trim();
+  const wa    = document.getElementById("partnerWA").value.trim().replace(/\D/g,"");
+  const email = document.getElementById("partnerEmail").value.trim();
+
+  if (!name) { showToast("⚠️ Ingresa el nombre del partner"); return; }
+  if (!wa)   { showToast("⚠️ Ingresa el WhatsApp"); return; }
+
+  S.partnerName = name;
+  S.partnerWA   = wa;
+
+  // Actualizar CTA en panel
+  document.getElementById("ctaNumber").textContent = wa;
+
+  // Mostrar card resumen
+  const card = document.getElementById("partnerCard");
+  card.classList.add("visible");
+  card.innerHTML = `
+    <strong>Partner activo:</strong> ${name}<br>
+    <strong>WhatsApp:</strong> +${wa}<br>
+    ${email ? `<strong>Email:</strong> ${email}` : ""}
+  `;
+
+  // Mostrar barra de partner debajo del header
+  const bar = document.getElementById("partnerBar");
+  bar.innerHTML = `Distribuidora activa: <strong>${name}</strong> &nbsp;|&nbsp; 📲 <strong>+${wa}</strong>${email ? ` &nbsp;|&nbsp; ✉️ <strong>${email}</strong>` : ""}`;
+  bar.classList.add("visible");
+
+  // Actualizar nombre de cuenta en post preview
+  document.getElementById("postAccountName").textContent = `@${name.toLowerCase().replace(/\s+/g,'_')}`;
+
+  showToast(`✅ Partner "${name}" activado`);
+}
+
+// ============================================================
+//  BANNER
+// ============================================================
+let currentSlide = 0;
+const TOTAL_SLIDES = 3;
+let bannerTimer = null;
+
+function goSlide(n) {
+  document.getElementById(`slide${currentSlide}`).classList.remove("active");
+  currentSlide = (n + TOTAL_SLIDES) % TOTAL_SLIDES;
+  document.getElementById(`slide${currentSlide}`).classList.add("active");
+  // Sync all dot groups
+  for (let i = 0; i < TOTAL_SLIDES; i++) {
+    const ctrl = document.getElementById(`ctrl${i}`);
+    if (ctrl) ctrl.querySelectorAll(".banner-dot").forEach((d,j) => {
+      d.classList.toggle("active", j === currentSlide);
+    });
+  }
+  resetBannerTimer();
+}
+
+function changeSlide(dir) { goSlide(currentSlide + dir); }
+
+function startBannerRotation() {
+  if (bannerTimer) clearInterval(bannerTimer);
+  bannerTimer = setInterval(() => changeSlide(1), 6000);
+}
+
+function resetBannerTimer() {
+  if (bannerTimer) clearInterval(bannerTimer);
+  setTimeout(startBannerRotation, 300);
+}
+
+// ============================================================
+//  GENERATE POST
+// ============================================================
+async function generatePost() {
+  if (!S.hook)     { showToast("⚠️ Selecciona un hook primero");    return; }
+  if (!S.platillo) { showToast("⚠️ Selecciona un platillo");        return; }
+
+  const btn = document.getElementById("generateBtn");
+  btn.disabled = true;
+
+  document.getElementById("placeholder").style.display   = "none";
+  document.getElementById("postResult").classList.remove("visible");
+  document.getElementById("actionRow").style.display     = "none";
+  document.getElementById("spinner").classList.add("visible");
+
+  const extra    = document.getElementById("extraInput").value.trim();
+  const producto = S.producto || "Juego completo de ollas";
+  const waNum    = S.partnerWA || "522214282564";
+
+  const toneMap = {
+    educativo:   "informativo y educativo sobre los beneficios del acero T304",
+    emocional:   "emotivo y cercano, apelando al amor familiar y el cuidado del hogar",
+    urgente:     "urgente y con sentido de escasez u oferta limitada",
+    lujoso:      "elegante, aspiracional y de lujo, estilo premium",
+    salud:       "enfocado en salud, bienestar y nutrición familiar",
+    comparativo: "comparativo entre teflón y acero inoxidable T304, dejando claro quién gana"
+  };
+
+  const prompt = `Eres un experto en marketing de redes sociales para una marca mexicana de utensilios de cocina de acero inoxidable quirúrgico T304 llamada "Inoxidables del Norte".
+
+Crea un post para Instagram/Facebook con estas características:
+- Hook de apertura EXACTO: "${S.hook}"
+- Platillo: "${S.platillo}"
+- Producto destacado: "${producto}"
+- Tono: ${toneMap[S.tone]}
+- Detalle extra: "${extra || 'ninguno'}"
+
+Reglas:
+1. Comienza EXACTAMENTE con el hook tal como se dio, sin modificarlo
+2. Conecta el platillo con los beneficios del acero T304: no libera toxinas, no guarda bacterias, resiste altas temperaturas, dura años
+3. Menciona el producto de forma natural
+4. Máximo 220 palabras
+5. 3-5 emojis distribuidos con naturalidad
+6. Termina con: "📲 Escríbenos por WhatsApp: +${waNum}"
+7. 3-5 hashtags al final: #AceroInoxidable #CocinaSaludable #InoxidablesDelNorte más 1-2 relevantes al platillo
+
+Responde ÚNICAMENTE con el texto del post listo para publicar. Sin comillas. Sin introducción. Sin comentarios extra.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.find(b => b.type === "text")?.text || "Error al generar el post.";
+
+    S.currentPost = text;
+    document.getElementById("postText").textContent = text;
+    document.getElementById("spinner").classList.remove("visible");
+    document.getElementById("postResult").classList.add("visible");
+    document.getElementById("actionRow").style.display = "flex";
+
+    S.totalGenerated++;
+    S.todayGenerated++;
+    updateStats();
+    addToHistory(text);
+    showToast("✨ Post generado con éxito");
+
+  } catch (err) {
+    document.getElementById("spinner").classList.remove("visible");
+    document.getElementById("placeholder").style.display = "flex";
+    showToast("❌ Error al conectar con la IA");
+    console.error(err);
+  }
+
+  btn.disabled = false;
+}
+
+function updateStats() {
+  document.getElementById("statTotal").textContent   = S.totalGenerated;
+  document.getElementById("statHoy").textContent     = S.todayGenerated;
+  document.getElementById("statCopied").textContent  = S.totalCopied;
+}
+
+function addToHistory(text) {
+  const preview = text.slice(0, 90) + "…";
+  S.history.unshift({ hook: S.hook, platillo: S.platillo, preview, full: text });
+  if (S.history.length > 6) S.history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const grid = document.getElementById("historyGrid");
+  grid.innerHTML = "";
+  S.history.forEach((item, i) => {
+    const card = document.createElement("div");
+    card.className = "history-card";
+    card.innerHTML = `<div class="history-badge">${item.platillo.slice(0,18)}</div><br>${item.preview}`;
+    card.onclick = () => {
+      S.currentPost = S.history[i].full;
+      document.getElementById("postText").textContent = S.history[i].full;
+      document.getElementById("postResult").classList.add("visible");
+      document.getElementById("placeholder").style.display = "none";
+      document.getElementById("actionRow").style.display = "flex";
+    };
+    grid.appendChild(card);
+  });
+}
+
+function copyPost() {
+  if (!S.currentPost) return;
+  navigator.clipboard.writeText(S.currentPost).then(() => {
+    S.totalCopied++;
+    updateStats();
+    showToast("📋 Post copiado al portapapeles");
+  });
+}
+
+function sendWhatsApp() {
+  if (!S.currentPost) return;
+  const msg = encodeURIComponent(S.currentPost);
+  window.open(`https://wa.me/${S.partnerWA}?text=${msg}`, "_blank");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+init();
+</script>
+</body>
+</html>
