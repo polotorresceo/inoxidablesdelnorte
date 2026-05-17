@@ -1,516 +1,6 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Robot de Posts — Inoxidables del Norte</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{
-  --gold:#c9a84c;--gold-l:#f0d080;--gold-d:#8a6a1a;
-  --dark:#1a1208;--cream:#f7f0e0;--steel:#8ab4c8;
-  --green:#1e5c38;--green-l:#2d8a55;--white:#fff;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--dark);font-family:'Montserrat',sans-serif;color:var(--cream);min-height:100vh;
-  background-image:radial-gradient(ellipse at 10% 20%,rgba(201,168,76,.08) 0%,transparent 50%),
-                   radial-gradient(ellipse at 90% 80%,rgba(30,92,56,.08) 0%,transparent 50%)}
+import { useState, useEffect, useRef, useCallback } from "react";
 
-/* ── ADMIN ── */
-.adm-bar{background:rgba(0,0,0,.65);border-bottom:1px solid rgba(201,168,76,.25)}
-.adm-toggle{width:100%;background:none;border:none;color:var(--gold);
-  font-family:'Montserrat',sans-serif;font-size:.7rem;font-weight:700;
-  letter-spacing:.2em;text-transform:uppercase;padding:10px 20px;
-  cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px}
-.adm-toggle .arr{margin-left:auto;transition:transform .25s}
-.adm-toggle.open .arr{transform:rotate(180deg)}
-.adm-body{display:none;padding:0 20px 20px}
-.adm-body.open{display:block}
-.adm-login{max-width:300px;margin:12px auto;text-align:center}
-.adm-login input{width:100%;background:rgba(255,255,255,.06);
-  border:1px solid rgba(201,168,76,.35);color:var(--cream);
-  padding:10px 14px;border-radius:6px;font-family:'Montserrat',sans-serif;
-  font-size:.82rem;outline:none;text-align:center;letter-spacing:.2em;
-  margin-bottom:10px;display:block}
-.adm-login input:focus{border-color:var(--gold)}
-.adm-login-btn{background:linear-gradient(135deg,var(--gold-d),var(--gold));
-  border:none;color:var(--dark);padding:10px 28px;border-radius:6px;
-  font-family:'Montserrat',sans-serif;font-weight:700;font-size:.78rem;
-  letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
-.adm-err{color:#e74c3c;font-size:.72rem;margin-top:6px;display:none}
-.adm-content{display:none}
-.adm-content.open{display:block}
-.adm-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px}
-@media(max-width:700px){.adm-grid{grid-template-columns:1fr}}
-
-/* ── BANNER ── */
-.banner-wrap{position:relative;overflow:hidden;border-bottom:2px solid var(--gold-d)}
-.slide{display:none;position:relative}
-.slide.active{display:block;animation:fadein .7s ease}
-@keyframes fadein{from{opacity:0}to{opacity:1}}
-.slide img{width:100%;max-height:390px;object-fit:cover;display:block}
-.slide-ph{height:190px;display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.25);font-size:.8rem;font-style:italic;
-  background:linear-gradient(135deg,#1a1208,#2e2010)}
-.slide-ov{position:absolute;bottom:0;left:0;right:0;
-  background:linear-gradient(transparent,rgba(0,0,0,.72));
-  padding:14px 22px;display:flex;justify-content:space-between;align-items:flex-end}
-.slide-lbl{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold-l);font-style:italic}
-.dots{display:flex;gap:8px}
-.dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.4);
-  cursor:pointer;border:none;transition:background .3s}
-.dot.active{background:var(--gold)}
-.bnav{position:absolute;top:50%;transform:translateY(-50%);
-  background:rgba(0,0,0,.5);border:1px solid var(--gold-d);
-  color:var(--gold);width:38px;height:38px;border-radius:50%;
-  cursor:pointer;font-size:1.2rem;display:flex;align-items:center;
-  justify-content:center;z-index:10;transition:all .2s}
-.bnav:hover{background:var(--gold-d);color:#fff}
-.bprev{left:12px}.bnext{right:12px}
-
-/* ── HEADER ── */
-.hdr{text-align:center;padding:28px 20px 14px}
-.hdr-logo{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,4vw,2.4rem);
-  font-weight:700;color:var(--gold);text-shadow:0 0 30px rgba(201,168,76,.4)}
-.hdr-logo em{font-weight:400}
-.hdr-sub{font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--steel);margin-top:4px}
-.gold-line{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:10px auto}
-.partner-bar{background:rgba(30,92,56,.15);border-top:1px solid rgba(45,138,85,.2);
-  border-bottom:1px solid rgba(45,138,85,.2);padding:8px 20px;
-  font-size:.73rem;color:rgba(255,255,255,.5);text-align:center;display:none}
-.partner-bar.on{display:block}
-.partner-bar strong{color:var(--green-l)}
-
-/* ── MAIN ── */
-.main{display:grid;grid-template-columns:340px 1fr;max-width:1300px;margin:0 auto;padding:0 16px 40px}
-@media(max-width:900px){.main{grid-template-columns:1fr}}
-
-/* ── LEFT ── */
-.left{background:rgba(255,255,255,.03);border-right:1px solid rgba(201,168,76,.2);
-  padding:24px 20px;display:flex;flex-direction:column;gap:20px}
-.sec-ttl{font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);
-  margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.sec-ttl::after{content:'';flex:1;height:1px;background:rgba(201,168,76,.3)}
-
-/* Dropdown */
-.dd{position:relative;width:100%}
-.dd-btn{width:100%;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);
-  color:var(--cream);padding:11px 16px;border-radius:6px;
-  font-family:'Montserrat',sans-serif;font-size:.82rem;cursor:pointer;
-  text-align:left;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
-.dd-btn:hover,.dd-btn.open{border-color:var(--gold);background:rgba(201,168,76,.14)}
-.dd-btn .arr2{font-size:.7rem;color:var(--gold);transition:transform .2s;flex-shrink:0}
-.dd-btn.open .arr2{transform:rotate(180deg)}
-.dd-list{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
-  background:#1e1608;border:1px solid rgba(201,168,76,.4);border-radius:6px;
-  max-height:255px;overflow-y:auto;z-index:200;box-shadow:0 8px 40px rgba(0,0,0,.5)}
-.dd-list.open{display:block;animation:sdown .15s ease}
-@keyframes sdown{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-.dd-list::-webkit-scrollbar{width:4px}
-.dd-list::-webkit-scrollbar-thumb{background:var(--gold-d);border-radius:2px}
-.dd-item{padding:9px 16px;font-size:.8rem;cursor:pointer;color:var(--cream);
-  border-bottom:1px solid rgba(255,255,255,.05);line-height:1.4;transition:background .15s}
-.dd-item:hover,.dd-item.sel{background:rgba(201,168,76,.15);color:var(--gold-l)}
-.dd-item:last-child{border-bottom:none}
-.sel-tag{display:inline-block;background:rgba(201,168,76,.18);border:1px solid rgba(201,168,76,.5);
-  color:var(--gold-l);font-size:.7rem;padding:3px 10px;border-radius:20px;margin-top:5px;
-  max-width:100%;word-break:break-word}
-
-/* Tone */
-.tone-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tone-btn{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.2);
-  color:var(--cream);padding:8px 4px;border-radius:6px;font-size:.72rem;
-  cursor:pointer;text-align:center;transition:all .2s;font-family:'Montserrat',sans-serif}
-.tone-btn.active,.tone-btn:hover{background:rgba(201,168,76,.2);border-color:var(--gold);color:var(--gold-l)}
-.extra-inp{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.25);
-  color:var(--cream);padding:10px 14px;border-radius:6px;
-  font-family:'Montserrat',sans-serif;font-size:.82rem;outline:none;resize:none;transition:border .2s}
-.extra-inp:focus{border-color:var(--gold)}
-.extra-inp::placeholder{color:rgba(255,255,255,.3);font-style:italic}
-.cta-box{background:rgba(30,92,56,.15);border:1px solid rgba(45,138,85,.3);
-  border-radius:6px;padding:12px 14px;font-size:.75rem;line-height:1.7}
-.cta-box strong{color:var(--green-l)}
-.sep{height:1px;background:rgba(201,168,76,.1)}
-.gen-btn{width:100%;padding:15px;
-  background:linear-gradient(135deg,var(--gold-d),var(--gold),var(--gold-d));
-  background-size:200% 200%;border:none;border-radius:8px;color:var(--dark);
-  font-family:'Montserrat',sans-serif;font-weight:800;font-size:.85rem;
-  letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .3s;
-  animation:shimmer 3s infinite}
-@keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-.gen-btn:hover{transform:translateY(-2px);box-shadow:0 6px 30px rgba(201,168,76,.5)}
-.gen-btn:active{transform:translateY(0)}
-.gen-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;animation:none}
-
-/* ── RIGHT ── */
-.right{padding:24px 24px 24px 28px;display:flex;flex-direction:column;gap:20px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.stat{background:rgba(255,255,255,.03);border:1px solid rgba(201,168,76,.15);
-  border-radius:8px;padding:14px;text-align:center}
-.stat-n{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;
-  color:var(--gold);line-height:1}
-.stat-l{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;
-  color:rgba(255,255,255,.4);margin-top:4px}
-.out-area{background:rgba(255,255,255,.03);border:1px solid rgba(201,168,76,.2);
-  border-radius:10px;min-height:300px;position:relative;overflow:hidden}
-.out-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:14px;color:rgba(255,255,255,.2);font-size:.8rem;
-  text-align:center;padding:20px}
-.out-ph .ico{font-size:3rem;opacity:.3}
-.spinner{display:none;position:absolute;inset:0;background:rgba(26,18,8,.88);
-  align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:20}
-.spinner.on{display:flex}
-.ring{width:48px;height:48px;border:3px solid rgba(201,168,76,.2);
-  border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.spin-txt{font-size:.78rem;color:var(--gold-l);letter-spacing:.1em;font-style:italic}
-.post-result{display:none;padding:28px;animation:fadein .5s ease}
-.post-result.on{display:block}
-.post-meta{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-.avatar{width:44px;height:44px;border-radius:50%;
-  background:linear-gradient(135deg,var(--gold-d),var(--green));
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;
-  color:var(--gold-l);flex-shrink:0}
-.post-acc{font-weight:700;font-size:.85rem}
-.post-acc-sub{font-size:.7rem;color:rgba(255,255,255,.4)}
-.post-txt{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
-  border-radius:8px;padding:18px;font-size:.88rem;line-height:1.8;
-  white-space:pre-wrap;color:var(--cream);min-height:160px}
-.actions{display:flex;gap:10px;flex-wrap:wrap}
-.act-btn{padding:10px 18px;border-radius:6px;font-family:'Montserrat',sans-serif;
-  font-size:.75rem;font-weight:600;cursor:pointer;letter-spacing:.06em;
-  text-transform:uppercase;transition:all .2s;display:flex;align-items:center;gap:6px}
-.btn-cp{background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);color:var(--gold-l)}
-.btn-cp:hover{background:rgba(201,168,76,.3)}
-.btn-rg{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);color:var(--cream)}
-.btn-rg:hover{background:rgba(255,255,255,.1)}
-.btn-wa{background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.35);color:#25d366}
-.btn-wa:hover{background:rgba(37,211,102,.25)}
-.tip-box{background:rgba(201,168,76,.06);border-left:3px solid var(--gold-d);
-  padding:12px 16px;border-radius:0 6px 6px 0;font-size:.75rem;
-  line-height:1.6;color:rgba(255,255,255,.55)}
-.tip-box strong{color:var(--gold-l)}
-.hist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:10px}
-.hist-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
-  border-radius:8px;padding:12px;font-size:.72rem;line-height:1.5;
-  cursor:pointer;transition:all .2s;color:rgba(255,255,255,.6)}
-.hist-card:hover{border-color:rgba(201,168,76,.4);color:var(--cream);background:rgba(201,168,76,.05)}
-.hist-badge{font-size:.6rem;background:rgba(201,168,76,.2);color:var(--gold);
-  padding:2px 7px;border-radius:20px;display:inline-block;margin-bottom:5px;
-  letter-spacing:.06em;text-transform:uppercase}
-
-/* ── ADMIN FIELDS ── */
-.adm-slot{display:flex;align-items:center;gap:10px;margin-bottom:10px;
-  background:rgba(255,255,255,.03);border:1px dashed rgba(201,168,76,.3);
-  border-radius:8px;padding:10px 12px}
-.adm-num{background:rgba(201,168,76,.2);color:var(--gold);width:26px;height:26px;
-  border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:.75rem;flex-shrink:0}
-.adm-inp{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.2);
-  color:var(--cream);padding:8px 10px;border-radius:5px;
-  font-family:'Montserrat',sans-serif;font-size:.73rem;outline:none}
-.adm-inp:focus{border-color:var(--gold)}
-.adm-inp::placeholder{color:rgba(255,255,255,.25);font-style:italic}
-.adm-apply{background:rgba(201,168,76,.18);border:1px solid rgba(201,168,76,.4);
-  color:var(--gold-l);padding:8px 12px;border-radius:5px;
-  font-family:'Montserrat',sans-serif;font-size:.68rem;font-weight:700;
-  cursor:pointer;white-space:nowrap}
-.adm-apply:hover{background:rgba(201,168,76,.3)}
-.pf-lbl{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
-  color:rgba(255,255,255,.4);margin-bottom:4px}
-.pf-inp{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.2);
-  color:var(--cream);padding:9px 12px;border-radius:6px;
-  font-family:'Montserrat',sans-serif;font-size:.82rem;outline:none;margin-bottom:10px;display:block}
-.pf-inp:focus{border-color:var(--gold)}
-.pf-inp::placeholder{color:rgba(255,255,255,.25)}
-.pf-save{background:linear-gradient(135deg,var(--green),var(--green-l));border:none;
-  color:#fff;padding:11px 20px;border-radius:6px;font-family:'Montserrat',sans-serif;
-  font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;
-  cursor:pointer;width:100%}
-.pf-save:hover{opacity:.9}
-.pf-card{background:rgba(30,92,56,.15);border:1px solid rgba(45,138,85,.3);
-  border-radius:8px;padding:10px 14px;font-size:.76rem;line-height:1.8;
-  display:none;margin-top:10px}
-.pf-card.on{display:block}
-.pf-card strong{color:var(--green-l)}
-
-/* ── TOAST ── */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;
-  padding:12px 20px;border-radius:8px;font-size:.82rem;font-weight:600;
-  opacity:0;transform:translateY(10px);transition:all .3s;z-index:999;pointer-events:none}
-.toast.on{opacity:1;transform:translateY(0)}
-</style>
-</head>
-<body>
-
-<!-- ══ ADMIN BAR ══════════════════════════════════════════ -->
-<div class="adm-bar">
-  <button class="adm-toggle" id="admToggle" onclick="toggleAdmin()">
-    <span>🔐</span> Panel de Administrador
-    <span class="arr">▼</span>
-  </button>
-  <div class="adm-body" id="admBody">
-
-    <!-- LOGIN -->
-    <div class="adm-login" id="admLogin">
-      <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:10px">Contraseña de administrador</div>
-      <input type="password" id="pwInp" placeholder="••••••" maxlength="10"
-        onkeydown="if(event.key==='Enter')checkPw()">
-      <button class="adm-login-btn" onclick="checkPw()">🔓 Entrar</button>
-      <div class="adm-err" id="pwErr">Contraseña incorrecta</div>
-    </div>
-
-    <!-- CONTENIDO -->
-    <div class="adm-content" id="admContent">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:.7rem;color:var(--green-l);font-weight:700">✅ Sesión activa</span>
-        <button onclick="logoutAdmin()"
-          style="background:none;border:none;color:rgba(255,255,255,.35);font-size:.68rem;cursor:pointer;text-decoration:underline">
-          Cerrar sesión
-        </button>
-      </div>
-      <div class="adm-grid">
-
-        <!-- BANNERS -->
-        <div>
-          <div class="sec-ttl" style="margin-bottom:10px">🖼️ Cargar Banners (URL imgbb)</div>
-          <div class="adm-slot">
-            <div class="adm-num">1</div>
-            <input class="adm-inp" id="burl0" placeholder="https://i.ibb.co/.../banner1.jpg"
-              value="https://i.ibb.co/6cfd6sPN/Gemini-Generated-Image-yiel6syiel6syiel.png">
-            <button class="adm-apply" onclick="applyBanner(0)">Aplicar</button>
-          </div>
-          <div class="adm-slot">
-            <div class="adm-num">2</div>
-            <input class="adm-inp" id="burl1" placeholder="https://i.ibb.co/.../banner2.jpg">
-            <button class="adm-apply" onclick="applyBanner(1)">Aplicar</button>
-          </div>
-          <div class="adm-slot">
-            <div class="adm-num">3</div>
-            <input class="adm-inp" id="burl2" placeholder="https://i.ibb.co/.../banner3.jpg">
-            <button class="adm-apply" onclick="applyBanner(2)">Aplicar</button>
-          </div>
-          <div style="font-size:.63rem;color:rgba(255,255,255,.3);line-height:1.6;margin-top:4px">
-            Pega la URL directa de imgbb (termina en .jpg o .png) y presiona Aplicar.
-          </div>
-        </div>
-
-        <!-- PARTNER -->
-        <div>
-          <div class="sec-ttl" style="margin-bottom:10px">👤 Datos del Partner</div>
-          <label class="pf-lbl">Nombre completo</label>
-          <input class="pf-inp" id="pfName" type="text" placeholder="Ej: María González">
-          <label class="pf-lbl">WhatsApp (con código de país)</label>
-          <input class="pf-inp" id="pfWA" type="text" placeholder="Ej: 522214282564">
-          <label class="pf-lbl">Correo Gmail</label>
-          <input class="pf-inp" id="pfEmail" type="email" placeholder="nombre@gmail.com">
-          <button class="pf-save" onclick="savePartner()">💾 Guardar y Activar</button>
-          <div class="pf-card" id="pfCard"></div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ BANNER ════════════════════════════════════════════ -->
-<div class="banner-wrap">
-  <div class="slide active" id="slide0">
-    <img id="bimg0"
-      src="https://i.ibb.co/6cfd6sPN/Gemini-Generated-Image-yiel6syiel6syiel.png"
-      alt="Banner 1"
-      onerror="this.style.display='none';document.getElementById('bph0').style.display='flex'">
-    <div id="bph0" class="slide-ph" style="display:none">🖼️ Banner 1 — carga tu imagen desde el panel admin</div>
-    <div class="slide-ov">
-      <span class="slide-lbl">🌟 Oferta Mayo — $14,500</span>
-      <div class="dots" id="dots0">
-        <button class="dot active" onclick="goSlide(0)"></button>
-        <button class="dot" onclick="goSlide(1)"></button>
-        <button class="dot" onclick="goSlide(2)"></button>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide" id="slide1">
-    <div id="bph1" class="slide-ph" style="background:linear-gradient(135deg,#0e2918,#1a3a20)">
-      🖼️ Banner 2 — carga tu imagen desde el panel admin
-    </div>
-    <div class="slide-ov">
-      <span class="slide-lbl">✨ Acero T304 — Sin Tóxicos</span>
-      <div class="dots" id="dots1">
-        <button class="dot" onclick="goSlide(0)"></button>
-        <button class="dot active" onclick="goSlide(1)"></button>
-        <button class="dot" onclick="goSlide(2)"></button>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide" id="slide2">
-    <div id="bph2" class="slide-ph" style="background:linear-gradient(135deg,#1a1208,#3a2a0a)">
-      🖼️ Banner 3 — carga tu imagen desde el panel admin
-    </div>
-    <div class="slide-ov">
-      <span class="slide-lbl">📲 Contáctanos — 52 2214282564</span>
-      <div class="dots" id="dots2">
-        <button class="dot" onclick="goSlide(0)"></button>
-        <button class="dot" onclick="goSlide(1)"></button>
-        <button class="dot active" onclick="goSlide(2)"></button>
-      </div>
-    </div>
-  </div>
-
-  <button class="bnav bprev" onclick="changeSlide(-1)">‹</button>
-  <button class="bnav bnext" onclick="changeSlide(1)">›</button>
-</div>
-
-<!-- ══ HEADER ════════════════════════════════════════════ -->
-<div class="hdr">
-  <div class="hdr-logo">∞ Inoxidables <em>del Norte</em></div>
-  <div class="hdr-sub">Robot de Creación de Posts • Cocina Saludable</div>
-  <div class="gold-line"></div>
-</div>
-<div class="partner-bar" id="partnerBar"></div>
-
-<!-- ══ MAIN ══════════════════════════════════════════════ -->
-<div class="main">
-
-  <!-- LEFT -->
-  <div class="left">
-
-    <div>
-      <div class="sec-ttl">🎣 Hook de apertura</div>
-      <div class="dd" id="ddHook">
-        <button class="dd-btn" id="btnHook" onclick="toggleDD('hookList','btnHook')">
-          <span id="hookVal" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90%">Seleccionar hook…</span>
-          <span class="arr2">▼</span>
-        </button>
-        <div class="dd-list" id="hookList"></div>
-      </div>
-      <div id="hookTag"></div>
-    </div>
-
-    <div>
-      <div class="sec-ttl">🍽️ Platillo a preparar</div>
-      <div class="dd" id="ddPlat">
-        <button class="dd-btn" id="btnPlat" onclick="toggleDD('platList','btnPlat')">
-          <span id="platVal" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90%">Seleccionar platillo…</span>
-          <span class="arr2">▼</span>
-        </button>
-        <div class="dd-list" id="platList"></div>
-      </div>
-      <div id="platTag"></div>
-    </div>
-
-    <div>
-      <div class="sec-ttl">🥘 Producto Inoxidables</div>
-      <div class="dd" id="ddProd">
-        <button class="dd-btn" id="btnProd" onclick="toggleDD('prodList','btnProd')">
-          <span id="prodVal" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90%">Seleccionar producto…</span>
-          <span class="arr2">▼</span>
-        </button>
-        <div class="dd-list" id="prodList"></div>
-      </div>
-      <div id="prodTag"></div>
-    </div>
-
-    <div>
-      <div class="sec-ttl">🎨 Tono del post</div>
-      <div class="tone-grid">
-        <button class="tone-btn active" onclick="setTone(this,'educativo')">🎓 Educativo</button>
-        <button class="tone-btn" onclick="setTone(this,'emocional')">💛 Emocional</button>
-        <button class="tone-btn" onclick="setTone(this,'urgente')">🔥 Urgente</button>
-        <button class="tone-btn" onclick="setTone(this,'lujoso')">✨ Lujoso</button>
-        <button class="tone-btn" onclick="setTone(this,'salud')">💚 Salud</button>
-        <button class="tone-btn" onclick="setTone(this,'comparativo')">⚖️ Comparativo</button>
-      </div>
-    </div>
-
-    <div>
-      <div class="sec-ttl">✏️ Detalle extra (opcional)</div>
-      <textarea class="extra-inp" id="extraInp" rows="2"
-        placeholder="Ej: destacar oferta de mayo, mencionar la tamalera…"></textarea>
-    </div>
-
-    <div class="cta-box">
-      <strong>📲 CTA automático:</strong><br>
-      WhatsApp: <strong id="ctaNum">+52 2214282564</strong>
-    </div>
-
-    <div class="sep"></div>
-
-    <button class="gen-btn" id="genBtn" onclick="generatePost()">
-      ✨ Generar Post con IA
-    </button>
-
-  </div>
-
-  <!-- RIGHT -->
-  <div class="right">
-
-    <div class="stats">
-      <div class="stat"><div class="stat-n" id="stTotal">0</div><div class="stat-l">Posts Generados</div></div>
-      <div class="stat"><div class="stat-n" id="stSes">0</div><div class="stat-l">Esta Sesión</div></div>
-      <div class="stat"><div class="stat-n" id="stCop">0</div><div class="stat-l">Copiados</div></div>
-    </div>
-
-    <div class="out-area" id="outArea">
-      <div class="out-ph" id="outPh">
-        <div class="ico">🥘</div>
-        <div>Selecciona un <strong style="color:var(--gold)">hook</strong> y un <strong style="color:var(--gold)">platillo</strong><br>luego presiona Generar Post</div>
-      </div>
-      <div class="spinner" id="spinner">
-        <div class="ring"></div>
-        <div class="spin-txt">Creando tu post con IA…</div>
-      </div>
-      <div class="post-result" id="postResult">
-        <div class="post-meta">
-          <div class="avatar">I</div>
-          <div>
-            <div class="post-acc" id="postAcc">@inoxidablesdelnorte</div>
-            <div class="post-acc-sub">Cocina Saludable · Acero T304</div>
-          </div>
-        </div>
-        <div class="post-txt" id="postTxt"></div>
-      </div>
-    </div>
-
-    <div class="actions" id="actions" style="display:none">
-      <button class="act-btn btn-cp" onclick="copyPost()">📋 Copiar Post</button>
-      <button class="act-btn btn-rg" onclick="generatePost()">🔄 Regenerar</button>
-      <button class="act-btn btn-wa" onclick="sendWA()">💬 WhatsApp</button>
-    </div>
-
-    <div class="tip-box">
-      <strong>💡 Tip:</strong> Los posts con hook de salud + platillo familiar generan hasta 3× más engagement. Alterna tonos cada semana para mantener la audiencia activa.
-    </div>
-
-    <div>
-      <div class="sec-ttl">📚 Últimos posts generados</div>
-      <div class="hist-grid" id="histGrid">
-        <div style="color:rgba(255,255,255,.2);font-size:.75rem;grid-column:1/-1">
-          Los posts generados aparecerán aquí…
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-/* ═══════════════════════════════════════════
-   ESTADO CENTRAL — objeto único, sin let sueltos
-═══════════════════════════════════════════ */
-const ST = {
-  hook:"", platillo:"", producto:"", tone:"educativo",
-  partnerWA:"522214282564", partnerName:"",
-  total:0, sesion:0, copiados:0,
-  currentPost:"", history:[]
-};
-
-/* ═══════════════════════════════════════════  DATOS  */
+/* ═══════════════════ DATOS ═══════════════════ */
 const HOOKS = [
   "¿Le estás dando toxinas a tu familia sin saberlo?",
   "¿Sabes qué libera tu sartén cuando lo calientas?",
@@ -582,339 +72,791 @@ const PRODUCTOS = [
   "Juego completo + portaespecias"
 ];
 
+const TONES = [
+  { k:"educativo",   l:"🎓 Educativo" },
+  { k:"emocional",   l:"💛 Emocional" },
+  { k:"urgente",     l:"🔥 Urgente"   },
+  { k:"lujoso",      l:"✨ Lujoso"    },
+  { k:"salud",       l:"💚 Salud"     },
+  { k:"comparativo", l:"⚖️ Comparativo" },
+];
+
 const TONE_DESC = {
   educativo:   "informativo y educativo sobre los beneficios del acero T304",
   emocional:   "emotivo y cercano, apelando al amor familiar y el cuidado del hogar",
   urgente:     "urgente y con sentido de escasez u oferta limitada",
   lujoso:      "elegante, aspiracional y de lujo, estilo premium",
   salud:       "enfocado en salud, bienestar y nutrición familiar",
-  comparativo: "comparativo entre teflón y acero inoxidable T304, dejando claro quién gana"
+  comparativo: "comparativo entre teflón y acero inoxidable T304, dejando claro quién gana",
 };
 
-/* ═══════════════════════════════════════════  INIT  */
-function init() {
-  buildDD("hookList", "btnHook", "hookVal", "hookTag", HOOKS, "hook");
-  buildDD("platList", "btnPlat", "platVal", "platTag", PLATILLOS, "platillo");
-  buildDD("prodList", "btnProd", "prodVal", "prodTag", PRODUCTOS, "producto");
-  startRotation();
+const BANNER_DEFAULT = "https://i.ibb.co/6cfd6sPN/Gemini-Generated-Image-yiel6syiel6syiel.png";
+const ADMIN_PW = "5366";
+
+/* ═══════════════════ ESTILOS GLOBALES ═══════════════════ */
+const GS = `
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;600;700;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1208; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #8a6a1a; border-radius: 2px; }
+  @keyframes shimmer { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+`;
+
+/* ═══════════════════ COMPONENTE SELECT ═══════════════════ */
+function Select({ placeholder, options, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+
+  useEffect(() => {
+    const fn = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position:"relative", width:"100%" }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width:"100%", background: value ? "rgba(201,168,76,0.12)" : "rgba(201,168,76,0.06)",
+          border:`1px solid ${value ? "rgba(201,168,76,0.6)" : "rgba(201,168,76,0.25)"}`,
+          color: value ? "#f0d080" : "rgba(247,240,224,0.6)",
+          padding:"11px 14px 11px 16px", borderRadius:7,
+          fontFamily:"Montserrat,sans-serif", fontSize:"0.81rem",
+          cursor:"pointer", textAlign:"left",
+          display:"flex", justifyContent:"space-between", alignItems:"center",
+          transition:"all 0.2s", gap:8
+        }}
+      >
+        <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+          {value || placeholder}
+        </span>
+        <span style={{ color:"#c9a84c", fontSize:"0.65rem", flexShrink:0,
+          transform: open ? "rotate(180deg)" : "none", transition:"transform 0.2s" }}>▼</span>
+      </button>
+
+      {open && (
+        <div style={{
+          position:"absolute", top:"calc(100% + 5px)", left:0, right:0,
+          background:"#1c1508", border:"1px solid rgba(201,168,76,0.4)",
+          borderRadius:7, maxHeight:250, overflowY:"auto", zIndex:500,
+          boxShadow:"0 12px 50px rgba(0,0,0,0.7)", animation:"fadeUp 0.15s ease"
+        }}>
+          {options.map(opt => (
+            <div key={opt}
+              onClick={() => { onChange(opt); setOpen(false); }}
+              style={{
+                padding:"9px 16px", fontSize:"0.79rem", cursor:"pointer",
+                borderBottom:"1px solid rgba(255,255,255,0.04)",
+                color: opt === value ? "#f0d080" : "#f7f0e0",
+                background: opt === value ? "rgba(201,168,76,0.2)" : "transparent",
+                transition:"background 0.12s", lineHeight:1.45
+              }}
+              onMouseEnter={e => { if(opt!==value) e.currentTarget.style.background="rgba(201,168,76,0.1)"; }}
+              onMouseLeave={e => { if(opt!==value) e.currentTarget.style.background="transparent"; }}
+            >{opt}</div>
+          ))}
+        </div>
+      )}
+
+      {value && (
+        <div style={{ marginTop:5 }}>
+          <span style={{
+            background:"rgba(201,168,76,0.15)", border:"1px solid rgba(201,168,76,0.4)",
+            color:"#f0d080", fontSize:"0.68rem", padding:"3px 10px",
+            borderRadius:20, display:"inline-block", maxWidth:"100%",
+            overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"
+          }}>✓ {value}</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
-/* ═══════════════════════════════════════════  DROPDOWNS  */
-function buildDD(listId, btnId, valId, tagId, items, key) {
-  const list = document.getElementById(listId);
-  items.forEach(item => {
-    const d = document.createElement("div");
-    d.className = "dd-item";
-    d.textContent = item;
-    d.addEventListener("click", () => {
-      ST[key] = item;                          // ← asignación directa a ST
-      const display = item.length > 38 ? item.slice(0,38)+"…" : item;
-      document.getElementById(valId).textContent = display;
-      document.getElementById(tagId).innerHTML =
-        `<span class="sel-tag">✓ ${display}</span>`;
-      // marcar activo
-      list.querySelectorAll(".dd-item").forEach(el =>
-        el.classList.toggle("sel", el.textContent === item));
-      closeAllDD();
-    });
-    list.appendChild(d);
-  });
+/* ═══════════════════ SECTION TITLE ═══════════════════ */
+function STitle({ children }) {
+  return (
+    <div style={{
+      fontSize:"0.61rem", letterSpacing:"0.22em", textTransform:"uppercase",
+      color:"#c9a84c", marginBottom:10,
+      display:"flex", alignItems:"center", gap:8
+    }}>
+      {children}
+      <div style={{ flex:1, height:1, background:"rgba(201,168,76,0.25)" }} />
+    </div>
+  );
 }
 
-function toggleDD(listId, btnId) {
-  const alreadyOpen = document.getElementById(listId).classList.contains("open");
-  closeAllDD();
-  if (!alreadyOpen) {
-    document.getElementById(listId).classList.add("open");
-    document.getElementById(btnId).classList.add("open");
-  }
-}
+/* ═══════════════════ APP PRINCIPAL ═══════════════════ */
+export default function App() {
 
-function closeAllDD() {
-  document.querySelectorAll(".dd-list").forEach(l => l.classList.remove("open"));
-  document.querySelectorAll(".dd-btn").forEach(b => b.classList.remove("open"));
-}
+  /* -- Banner -- */
+  const [bannerUrls, setBannerUrls]     = useState([BANNER_DEFAULT, "", ""]);
+  const [bannerInputs, setBannerInputs] = useState([BANNER_DEFAULT, "", ""]);
+  const [slide, setSlide]               = useState(0);
+  const timerRef = useRef(null);
 
-document.addEventListener("click", e => {
-  if (!e.target.closest(".dd")) closeAllDD();
-});
+  /* -- Admin -- */
+  const [admOpen, setAdmOpen]       = useState(false);
+  const [admAuth, setAdmAuth]       = useState(false);
+  const [pwVal, setPwVal]           = useState("");
+  const [pwErr, setPwErr]           = useState(false);
 
-/* ═══════════════════════════════════════════  TONE  */
-function setTone(btn, t) {
-  document.querySelectorAll(".tone-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  ST.tone = t;
-}
+  /* -- Partner -- */
+  const [pName, setPName]   = useState("");
+  const [pWA, setPWA]       = useState("522214282564");
+  const [pEmail, setPEmail] = useState("");
+  const [pNameI, setPNameI] = useState("");
+  const [pWAI, setPWAI]     = useState("");
+  const [pEmailI, setPEmailI] = useState("");
+  const [pSaved, setPSaved] = useState(false);
 
-/* ═══════════════════════════════════════════  ADMIN  */
-function toggleAdmin() {
-  document.getElementById("admBody").classList.toggle("open");
-  document.getElementById("admToggle").classList.toggle("open");
-}
+  /* -- Generator -- */
+  const [hook, setHook]       = useState("");
+  const [plat, setPlat]       = useState("");
+  const [prod, setProd]       = useState("");
+  const [tone, setTone]       = useState("educativo");
+  const [extra, setExtra]     = useState("");
+  const [loading, setLoading] = useState(false);
+  const [postTxt, setPostTxt] = useState("");
+  const [postVis, setPostVis] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [stats, setStats]     = useState({ total:0, ses:0, cop:0 });
+  const [toast, setToast]     = useState({ msg:"", on:false });
+  const toastRef = useRef(null);
 
-function checkPw() {
-  const v = document.getElementById("pwInp").value;
-  if (v === "5366") {
-    document.getElementById("admLogin").style.display = "none";
-    document.getElementById("admContent").classList.add("open");
-    document.getElementById("pwErr").style.display = "none";
-  } else {
-    document.getElementById("pwErr").style.display = "block";
-    document.getElementById("pwInp").value = "";
-  }
-}
+  /* ── Banner rotation ── */
+  const startRot = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setSlide(s => (s+1)%3), 6000);
+  }, []);
 
-function logoutAdmin() {
-  document.getElementById("admLogin").style.display = "block";
-  document.getElementById("admContent").classList.remove("open");
-  document.getElementById("admBody").classList.remove("open");
-  document.getElementById("admToggle").classList.remove("open");
-  document.getElementById("pwInp").value = "";
-}
+  useEffect(() => { startRot(); return () => clearInterval(timerRef.current); }, [startRot]);
 
-/* ═══════════════════════════════════════════  BANNERS  */
-function applyBanner(idx) {
-  const url = document.getElementById("burl"+idx).value.trim();
-  if (!url) { showToast("⚠️ Ingresa una URL primero"); return; }
-
-  const slide = document.getElementById("slide"+idx);
-  const ph    = document.getElementById("bph"+idx);
-
-  // Si ya hay imagen en el slide la reutilizamos, si no la creamos
-  let img = slide.querySelector("img");
-  if (!img) {
-    img = document.createElement("img");
-    img.style.cssText = "width:100%;max-height:390px;object-fit:cover;display:block";
-    slide.insertBefore(img, ph);
-  }
-  img.style.display = "block";
-  ph.style.display  = "none";
-  img.src = url;
-  img.onerror = () => {
-    img.style.display = "none";
-    ph.style.display  = "flex";
-    showToast("❌ No se pudo cargar la imagen");
+  const goSlide = n => {
+    setSlide(((n % 3) + 3) % 3);
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimeout(startRot, 300);
   };
-  img.onload = () => showToast("✅ Banner "+(idx+1)+" actualizado");
-}
 
-/* ═══════════════════════════════════════════  PARTNER  */
-function savePartner() {
-  const name  = document.getElementById("pfName").value.trim();
-  const wa    = document.getElementById("pfWA").value.trim().replace(/\D/g,"");
-  const email = document.getElementById("pfEmail").value.trim();
-  if (!name) { showToast("⚠️ Ingresa el nombre del partner"); return; }
-  if (!wa)   { showToast("⚠️ Ingresa el WhatsApp");           return; }
+  /* ── Toast ── */
+  const showToast = msg => {
+    setToast({ msg, on:true });
+    if (toastRef.current) clearTimeout(toastRef.current);
+    toastRef.current = setTimeout(() => setToast({ msg:"", on:false }), 3000);
+  };
 
-  ST.partnerName = name;
-  ST.partnerWA   = wa;
-  document.getElementById("ctaNum").textContent = "+"+wa;
+  /* ── Admin ── */
+  const checkPw = () => {
+    if (pwVal === ADMIN_PW) { setAdmAuth(true); setPwErr(false); setPwVal(""); }
+    else { setPwErr(true); setPwVal(""); }
+  };
 
-  // card resumen
-  const card = document.getElementById("pfCard");
-  card.classList.add("on");
-  card.innerHTML = `<strong>Partner:</strong> ${name}<br>
-    <strong>WhatsApp:</strong> +${wa}<br>
-    ${email ? `<strong>Email:</strong> ${email}` : ""}`;
+  /* ── Apply banner ── */
+  const applyBanner = idx => {
+    const url = bannerInputs[idx].trim();
+    if (!url) { showToast("⚠️ Ingresa una URL primero"); return; }
+    setBannerUrls(prev => { const n=[...prev]; n[idx]=url; return n; });
+    showToast(`✅ Banner ${idx+1} actualizado`);
+  };
 
-  // barra visible
-  const bar = document.getElementById("partnerBar");
-  bar.classList.add("on");
-  bar.innerHTML = `Distribuidora activa: <strong>${name}</strong> &nbsp;|&nbsp; 📲 <strong>+${wa}</strong>
-    ${email ? ` &nbsp;|&nbsp; ✉️ <strong>${email}</strong>` : ""}`;
+  /* ── Save partner ── */
+  const savePartner = () => {
+    if (!pNameI) { showToast("⚠️ Ingresa el nombre"); return; }
+    if (!pWAI)   { showToast("⚠️ Ingresa el WhatsApp"); return; }
+    const wa = pWAI.replace(/\D/g,"");
+    setPName(pNameI); setPWA(wa); setPEmail(pEmailI); setPSaved(true);
+    showToast(`✅ Partner "${pNameI}" activado`);
+  };
 
-  // nombre cuenta
-  document.getElementById("postAcc").textContent =
-    "@"+name.toLowerCase().replace(/\s+/g,"_");
+  /* ════════════════════════════════════════
+     GENERAR POST — llamada a Anthropic API
+     El fetch funciona porque Claude.ai sirve
+     este artifact y maneja el proxy/auth.
+  ════════════════════════════════════════ */
+  const generatePost = async () => {
+    if (!hook) { showToast("⚠️ Selecciona un hook primero"); return; }
+    if (!plat) { showToast("⚠️ Selecciona un platillo");    return; }
 
-  showToast(`✅ Partner "${name}" activado`);
-}
+    setLoading(true);
+    setPostVis(false);
+    setPostTxt("");
 
-/* ═══════════════════════════════════════════  BANNER ROTACIÓN  */
-let curSlide = 0;
-const NSLIDES = 3;
-let rotTimer = null;
+    const producto = prod || "Juego completo de ollas";
+    const waNum    = pWA  || "522214282564";
 
-function goSlide(n) {
-  document.getElementById("slide"+curSlide).classList.remove("active");
-  curSlide = ((n % NSLIDES) + NSLIDES) % NSLIDES;
-  document.getElementById("slide"+curSlide).classList.add("active");
-  // sincronizar todos los grupos de dots
-  for (let i = 0; i < NSLIDES; i++) {
-    const g = document.getElementById("dots"+i);
-    if (g) g.querySelectorAll(".dot").forEach((d,j) =>
-      d.classList.toggle("active", j === curSlide));
-  }
-  if (rotTimer) clearInterval(rotTimer);
-  setTimeout(startRotation, 400);
-}
-
-function changeSlide(dir) { goSlide(curSlide + dir); }
-
-function startRotation() {
-  if (rotTimer) clearInterval(rotTimer);
-  rotTimer = setInterval(() => goSlide(curSlide + 1), 6000);
-}
-
-/* ═══════════════════════════════════════════  GENERAR POST  */
-async function generatePost() {
-  if (!ST.hook)     { showToast("⚠️ Selecciona un hook primero"); return; }
-  if (!ST.platillo) { showToast("⚠️ Selecciona un platillo");     return; }
-
-  const btn = document.getElementById("genBtn");
-  btn.disabled = true;
-  btn.textContent = "⏳ Generando…";
-
-  document.getElementById("outPh").style.display    = "none";
-  document.getElementById("postResult").classList.remove("on");
-  document.getElementById("actions").style.display  = "none";
-  document.getElementById("spinner").classList.add("on");
-
-  const extra  = document.getElementById("extraInp").value.trim();
-  const prod   = ST.producto || "Juego completo de ollas";
-  const waNum  = ST.partnerWA || "522214282564";
-
-  const prompt =
-`Eres un experto en marketing de redes sociales para "Inoxidables del Norte", marca mexicana de utensilios de cocina de acero inoxidable quirúrgico T304.
+    const prompt =
+`Eres experto en marketing de redes sociales para "Inoxidables del Norte", marca mexicana de utensilios de cocina de acero inoxidable quirúrgico T304.
 
 Crea un post para Instagram/Facebook con:
-- Hook de apertura EXACTO (no lo modifiques): "${ST.hook}"
-- Platillo: "${ST.platillo}"
-- Producto destacado: "${prod}"
-- Tono: ${TONE_DESC[ST.tone]}
-- Detalle extra: "${extra || 'ninguno'}"
+• Hook EXACTO (cópialo sin cambiar ni una letra): "${hook}"
+• Platillo: "${plat}"
+• Producto: "${producto}"
+• Tono: ${TONE_DESC[tone]}
+• Detalle extra: "${extra || 'ninguno'}"
 
-Reglas estrictas:
-1. Empieza EXACTAMENTE con el hook, sin cambiar ni una letra
-2. Conecta el platillo con los beneficios del acero T304: no libera toxinas, no guarda bacterias, resiste altas temperaturas, dura años
-3. Menciona el producto de forma natural
+REGLAS:
+1. Inicia EXACTAMENTE con el hook, sin modificarlo
+2. Conecta el platillo con beneficios del acero T304: no libera toxinas, no guarda bacterias, resiste altas temperaturas, dura años
+3. Menciona el producto de forma natural en el texto
 4. Máximo 220 palabras
-5. Incluye 3-5 emojis distribuidos con naturalidad
-6. Termina SIEMPRE con esta línea exacta: "📲 Escríbenos por WhatsApp: +${waNum}"
-7. Agrega al final 3-5 hashtags: #AceroInoxidable #CocinaSaludable #InoxidablesDelNorte más 1-2 del platillo
+5. 3-5 emojis distribuidos con naturalidad
+6. Última línea SIEMPRE: "📲 Escríbenos por WhatsApp: +${waNum}"
+7. 3-5 hashtags finales: #AceroInoxidable #CocinaSaludable #InoxidablesDelNorte + 1-2 del platillo
 
-IMPORTANTE: Responde ÚNICAMENTE con el texto del post. Sin comillas, sin introducción, sin notas, sin explicaciones.`;
+RESPONDE SOLO CON EL TEXTO DEL POST. Sin comillas, sin introducción, sin notas.`;
 
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
 
-    // Capturar errores HTTP antes de parsear JSON
-    if (!res.ok) {
-      let msg = "HTTP " + res.status;
-      try { const e = await res.json(); msg = e.error?.message || msg; } catch(_){}
-      throw new Error(msg);
+      if (!response.ok) {
+        let errMsg = `Error HTTP ${response.status}`;
+        try {
+          const errData = await response.json();
+          errMsg = errData?.error?.message || errMsg;
+        } catch (_) {}
+        throw new Error(errMsg);
+      }
+
+      const data = await response.json();
+
+      const block = Array.isArray(data.content)
+        ? data.content.find(b => b.type === "text")
+        : null;
+
+      if (!block || !block.text) throw new Error("Respuesta vacía de la API");
+
+      const text = block.text.trim();
+      setPostTxt(text);
+      setPostVis(true);
+      setStats(s => ({ ...s, total: s.total+1, ses: s.ses+1 }));
+      setHistory(h => [{ plat, preview: text.slice(0,90)+"…", full: text }, ...h].slice(0, 6));
+      showToast("✨ ¡Post generado con éxito!");
+
+    } catch (err) {
+      console.error("API Error:", err);
+      showToast("❌ " + (err.message || "Error desconocido"));
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const data = await res.json();
-
-    // Extraer texto de la respuesta
-    const textBlock = data.content && data.content.find(b => b.type === "text");
-    if (!textBlock || !textBlock.text) throw new Error("La IA no devolvió texto");
-
-    const text = textBlock.text.trim();
-
-    ST.currentPost = text;
-    document.getElementById("postTxt").textContent = text;
-    document.getElementById("spinner").classList.remove("on");
-    document.getElementById("postResult").classList.add("on");
-    document.getElementById("actions").style.display = "flex";
-
-    ST.total++;
-    ST.sesion++;
-    updateStats();
-    addHistory(text);
-    showToast("✨ Post generado con éxito");
-
-  } catch (err) {
-    console.error("Error API:", err);
-    document.getElementById("spinner").classList.remove("on");
-    document.getElementById("outPh").style.display = "flex";
-    showToast("❌ " + (err.message || "Error al conectar con la IA"));
-  }
-
-  btn.disabled = false;
-  btn.textContent = "✨ Generar Post con IA";
-}
-
-/* ═══════════════════════════════════════════  HELPERS  */
-function updateStats() {
-  document.getElementById("stTotal").textContent = ST.total;
-  document.getElementById("stSes").textContent   = ST.sesion;
-  document.getElementById("stCop").textContent   = ST.copiados;
-}
-
-function addHistory(text) {
-  ST.history.unshift({
-    platillo: ST.platillo,
-    preview:  text.slice(0,88)+"…",
-    full:     text
-  });
-  if (ST.history.length > 6) ST.history.pop();
-  renderHistory();
-}
-
-function renderHistory() {
-  const g = document.getElementById("histGrid");
-  g.innerHTML = "";
-  ST.history.forEach((item, i) => {
-    const c = document.createElement("div");
-    c.className = "hist-card";
-    c.innerHTML = `<span class="hist-badge">${item.platillo.slice(0,18)}</span><br>${item.preview}`;
-    c.onclick = () => {
-      ST.currentPost = ST.history[i].full;
-      document.getElementById("postTxt").textContent = ST.history[i].full;
-      document.getElementById("postResult").classList.add("on");
-      document.getElementById("outPh").style.display = "none";
-      document.getElementById("actions").style.display = "flex";
+  const copyPost = () => {
+    if (!postTxt) return;
+    const doCopy = () => {
+      setStats(s => ({ ...s, cop: s.cop+1 }));
+      showToast("📋 Post copiado al portapapeles");
     };
-    g.appendChild(c);
-  });
-}
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(postTxt).then(doCopy).catch(() => {
+        const ta = Object.assign(document.createElement("textarea"),
+          { value: postTxt, style: "position:fixed;opacity:0" });
+        document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta);
+        doCopy();
+      });
+    }
+  };
 
-function copyPost() {
-  if (!ST.currentPost) return;
-  navigator.clipboard.writeText(ST.currentPost).then(() => {
-    ST.copiados++;
-    updateStats();
-    showToast("📋 Post copiado al portapapeles");
-  }).catch(() => {
-    // fallback para entornos sin clipboard API
-    const ta = document.createElement("textarea");
-    ta.value = ST.currentPost;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    document.body.removeChild(ta);
-    ST.copiados++;
-    updateStats();
-    showToast("📋 Post copiado");
-  });
-}
+  const sendWA = () => {
+    if (!postTxt) return;
+    window.open(`https://wa.me/${pWA}?text=${encodeURIComponent(postTxt)}`, "_blank");
+  };
 
-function sendWA() {
-  if (!ST.currentPost) return;
-  window.open("https://wa.me/"+ST.partnerWA+"?text="+encodeURIComponent(ST.currentPost),"_blank");
-}
+  /* ─── colores base ─── */
+  const G = "#c9a84c", GL = "#f0d080", GD = "#8a6a1a";
+  const DARK = "#1a1208", CREAM = "#f7f0e0";
+  const GREEN = "#1e5c38", GREENL = "#2d8a55";
 
-let toastTimer;
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("on");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("on"), 2800);
-}
+  const bannerLabels = [
+    "🌟 Oferta Mayo — $14,500",
+    "✨ Acero Quirúrgico T304 — Sin Tóxicos",
+    "📲 Contáctanos — 52 2214282564"
+  ];
+  const bannerBgs = [
+    "linear-gradient(135deg,#1a1208,#2e2010)",
+    "linear-gradient(135deg,#0e2918,#1a3a20)",
+    "linear-gradient(135deg,#1a1208,#3a2a0a)"
+  ];
 
-/* ═══════════════════════════════════════════  ARRANCAR  */
-init();
-</script>
-</body>
-</html>
+  return (
+    <div style={{ background: DARK, minHeight:"100vh",
+      fontFamily:"Montserrat,sans-serif", color: CREAM,
+      backgroundImage:"radial-gradient(ellipse at 10% 20%,rgba(201,168,76,.07) 0%,transparent 50%),radial-gradient(ellipse at 90% 80%,rgba(30,92,56,.07) 0%,transparent 50%)" }}>
+
+      <style>{GS}</style>
+
+      {/* ══ ADMIN ══ */}
+      <div style={{ background:"rgba(0,0,0,.7)", borderBottom:"1px solid rgba(201,168,76,.2)" }}>
+        <button
+          onClick={() => setAdmOpen(o => !o)}
+          style={{ width:"100%", background:"none", border:"none", color: G,
+            fontFamily:"Montserrat,sans-serif", fontSize:"0.69rem", fontWeight:700,
+            letterSpacing:"0.22em", textTransform:"uppercase",
+            padding:"10px 20px", cursor:"pointer", textAlign:"left",
+            display:"flex", alignItems:"center", gap:10 }}>
+          🔐 Panel de Administrador
+          <span style={{ marginLeft:"auto", transition:"transform 0.25s",
+            transform: admOpen ? "rotate(180deg)" : "none" }}>▼</span>
+        </button>
+
+        {admOpen && (
+          <div style={{ padding:"0 20px 20px", animation:"fadeUp 0.2s ease" }}>
+            {!admAuth ? (
+              <div style={{ maxWidth:280, margin:"10px auto", textAlign:"center" }}>
+                <div style={{ fontSize:"0.73rem", color:"rgba(255,255,255,.4)", marginBottom:10 }}>
+                  Ingresa la contraseña de administrador
+                </div>
+                <input
+                  type="password" value={pwVal}
+                  onChange={e => { setPwVal(e.target.value); setPwErr(false); }}
+                  onKeyDown={e => e.key==="Enter" && checkPw()}
+                  placeholder="••••••" maxLength={10}
+                  style={{ width:"100%", background:"rgba(255,255,255,.06)",
+                    border:`1px solid ${pwErr ? "#e74c3c" : "rgba(201,168,76,.35)"}`,
+                    color: CREAM, padding:"10px 14px", borderRadius:6,
+                    fontFamily:"Montserrat,sans-serif", fontSize:"0.82rem",
+                    outline:"none", textAlign:"center", letterSpacing:"0.2em",
+                    marginBottom:8, display:"block" }} />
+                {pwErr && <div style={{ color:"#e74c3c", fontSize:"0.71rem", marginBottom:8 }}>
+                  Contraseña incorrecta
+                </div>}
+                <button onClick={checkPw}
+                  style={{ background:`linear-gradient(135deg,${GD},${G})`,
+                    border:"none", color: DARK, padding:"10px 28px", borderRadius:6,
+                    fontFamily:"Montserrat,sans-serif", fontWeight:700,
+                    fontSize:"0.78rem", letterSpacing:"0.1em",
+                    textTransform:"uppercase", cursor:"pointer" }}>
+                  🔓 Entrar
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display:"flex", justifyContent:"space-between",
+                  alignItems:"center", marginBottom:14 }}>
+                  <span style={{ fontSize:"0.69rem", color: GREENL, fontWeight:700 }}>
+                    ✅ Sesión de administrador activa
+                  </span>
+                  <button onClick={() => { setAdmAuth(false); setAdmOpen(false); }}
+                    style={{ background:"none", border:"none",
+                      color:"rgba(255,255,255,.35)", fontSize:"0.67rem",
+                      cursor:"pointer", textDecoration:"underline" }}>
+                    Cerrar sesión
+                  </button>
+                </div>
+
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:24 }}>
+
+                  {/* BANNERS */}
+                  <div>
+                    <STitle>🖼️ Cargar Banners (URL imgbb)</STitle>
+                    {[0,1,2].map(i => (
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:8,
+                        marginBottom:10, background:"rgba(255,255,255,.03)",
+                        border:"1px dashed rgba(201,168,76,.28)",
+                        borderRadius:8, padding:"10px 12px" }}>
+                        <div style={{ background:"rgba(201,168,76,.2)", color: G,
+                          width:26, height:26, borderRadius:"50%",
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          fontWeight:700, fontSize:"0.73rem", flexShrink:0 }}>{i+1}</div>
+                        <input type="text"
+                          value={bannerInputs[i]}
+                          onChange={e => { const n=[...bannerInputs]; n[i]=e.target.value; setBannerInputs(n); }}
+                          placeholder={`URL banner ${i+1}.jpg`}
+                          style={{ flex:1, background:"rgba(255,255,255,.05)",
+                            border:"1px solid rgba(201,168,76,.2)", color: CREAM,
+                            padding:"7px 10px", borderRadius:5,
+                            fontFamily:"Montserrat,sans-serif", fontSize:"0.72rem",
+                            outline:"none" }} />
+                        <button onClick={() => applyBanner(i)}
+                          style={{ background:"rgba(201,168,76,.18)",
+                            border:"1px solid rgba(201,168,76,.4)", color: GL,
+                            padding:"7px 12px", borderRadius:5,
+                            fontFamily:"Montserrat,sans-serif", fontSize:"0.67rem",
+                            fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
+                          Aplicar
+                        </button>
+                      </div>
+                    ))}
+                    <div style={{ fontSize:"0.62rem", color:"rgba(255,255,255,.28)", lineHeight:1.6 }}>
+                      Copia la URL directa de imgbb (termina en .jpg/.png) y presiona Aplicar.
+                    </div>
+                  </div>
+
+                  {/* PARTNER */}
+                  <div>
+                    <STitle>👤 Datos del Partner / Distribuidora</STitle>
+                    {[
+                      { label:"Nombre completo", val:pNameI, set:setPNameI, ph:"Ej: María González",    type:"text"  },
+                      { label:"WhatsApp (con código país)", val:pWAI, set:setPWAI, ph:"Ej: 522214282564", type:"text"  },
+                      { label:"Correo Gmail",    val:pEmailI, set:setPEmailI, ph:"nombre@gmail.com",   type:"email" },
+                    ].map(f => (
+                      <div key={f.label} style={{ marginBottom:10 }}>
+                        <div style={{ fontSize:"0.61rem", letterSpacing:"0.1em",
+                          textTransform:"uppercase", color:"rgba(255,255,255,.38)",
+                          marginBottom:4 }}>{f.label}</div>
+                        <input type={f.type} value={f.val}
+                          onChange={e => f.set(e.target.value)}
+                          placeholder={f.ph}
+                          style={{ width:"100%", background:"rgba(255,255,255,.05)",
+                            border:"1px solid rgba(201,168,76,.2)", color: CREAM,
+                            padding:"9px 12px", borderRadius:6,
+                            fontFamily:"Montserrat,sans-serif", fontSize:"0.81rem",
+                            outline:"none" }} />
+                      </div>
+                    ))}
+                    <button onClick={savePartner}
+                      style={{ background:`linear-gradient(135deg,${GREEN},${GREENL})`,
+                        border:"none", color:"#fff", padding:"11px 20px",
+                        borderRadius:6, fontFamily:"Montserrat,sans-serif",
+                        fontWeight:700, fontSize:"0.77rem", letterSpacing:"0.08em",
+                        textTransform:"uppercase", cursor:"pointer", width:"100%" }}>
+                      💾 Guardar y Activar
+                    </button>
+                    {pSaved && (
+                      <div style={{ marginTop:10, background:"rgba(30,92,56,.15)",
+                        border:"1px solid rgba(45,138,85,.3)", borderRadius:8,
+                        padding:"10px 14px", fontSize:"0.75rem", lineHeight:1.8 }}>
+                        <strong style={{ color: GREENL }}>Partner:</strong> {pName}<br/>
+                        <strong style={{ color: GREENL }}>WhatsApp:</strong> +{pWA}<br/>
+                        {pEmail && <><strong style={{ color: GREENL }}>Email:</strong> {pEmail}</>}
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ══ BANNER ══ */}
+      <div style={{ position:"relative", overflow:"hidden", borderBottom:"2px solid "+GD }}>
+        {[0,1,2].map(i => (
+          <div key={i} style={{ display: i===slide ? "block" : "none",
+            position:"relative", animation: i===slide ? "fadeUp 0.7s ease" : "none" }}>
+            {bannerUrls[i] ? (
+              <img src={bannerUrls[i]} alt={`Banner ${i+1}`}
+                onError={e => { e.target.style.display="none"; }}
+                style={{ width:"100%", maxHeight:380, objectFit:"cover", display:"block" }} />
+            ) : (
+              <div style={{ height:180, background: bannerBgs[i],
+                display:"flex", alignItems:"center", justifyContent:"center",
+                color:"rgba(255,255,255,.22)", fontSize:"0.8rem", fontStyle:"italic" }}>
+                🖼️ Banner {i+1} — carga tu imagen desde el panel admin
+              </div>
+            )}
+            <div style={{ position:"absolute", bottom:0, left:0, right:0,
+              background:"linear-gradient(transparent,rgba(0,0,0,.72))",
+              padding:"14px 22px", display:"flex",
+              justifyContent:"space-between", alignItems:"flex-end" }}>
+              <span style={{ fontFamily:"Cormorant Garamond,serif", fontSize:"1.05rem",
+                color: GL, fontStyle:"italic" }}>{bannerLabels[i]}</span>
+              <div style={{ display:"flex", gap:8 }}>
+                {[0,1,2].map(j => (
+                  <button key={j} onClick={() => goSlide(j)}
+                    style={{ width:10, height:10, borderRadius:"50%", border:"none",
+                      background: j===slide ? G : "rgba(255,255,255,.38)",
+                      cursor:"pointer", transition:"background 0.3s", padding:0 }} />
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+        {["‹","›"].map((ch, di) => (
+          <button key={ch} onClick={() => goSlide(slide + (di===0 ? -1 : 1))}
+            style={{ position:"absolute", top:"50%", transform:"translateY(-50%)",
+              [di===0 ? "left" : "right"]: 12,
+              background:"rgba(0,0,0,.5)", border:`1px solid ${GD}`,
+              color: G, width:38, height:38, borderRadius:"50%",
+              cursor:"pointer", fontSize:"1.2rem",
+              display:"flex", alignItems:"center", justifyContent:"center", zIndex:10 }}>
+            {ch}
+          </button>
+        ))}
+      </div>
+
+      {/* ══ HEADER ══ */}
+      <div style={{ textAlign:"center", padding:"28px 20px 14px" }}>
+        <div style={{ fontFamily:"Cormorant Garamond,serif",
+          fontSize:"clamp(1.5rem,4vw,2.5rem)",
+          fontWeight:700, color: G,
+          textShadow:`0 0 40px rgba(201,168,76,.35)` }}>
+          ∞ Inoxidables <em style={{ fontWeight:400 }}>del Norte</em>
+        </div>
+        <div style={{ fontSize:"0.68rem", letterSpacing:"0.26em",
+          textTransform:"uppercase", color:"#8ab4c8", marginTop:5 }}>
+          Robot de Creación de Posts • Cocina Saludable
+        </div>
+        <div style={{ width:80, height:1,
+          background:`linear-gradient(90deg,transparent,${G},transparent)`,
+          margin:"10px auto" }} />
+      </div>
+
+      {pSaved && (
+        <div style={{ background:"rgba(30,92,56,.15)",
+          borderTop:"1px solid rgba(45,138,85,.2)",
+          borderBottom:"1px solid rgba(45,138,85,.2)",
+          padding:"8px 20px", fontSize:"0.72rem",
+          color:"rgba(255,255,255,.5)", textAlign:"center" }}>
+          Distribuidora activa: <strong style={{ color: GREENL }}>{pName}</strong>
+          &nbsp;|&nbsp; 📲 <strong style={{ color: GREENL }}>+{pWA}</strong>
+          {pEmail && <> &nbsp;|&nbsp; ✉️ <strong style={{ color: GREENL }}>{pEmail}</strong></>}
+        </div>
+      )}
+
+      {/* ══ MAIN GRID ══ */}
+      <div style={{ display:"grid", gridTemplateColumns:"320px 1fr",
+        maxWidth:1280, margin:"0 auto", padding:"0 16px 48px" }}>
+
+        {/* ── LEFT ── */}
+        <div style={{ background:"rgba(255,255,255,.025)",
+          borderRight:"1px solid rgba(201,168,76,.18)",
+          padding:"24px 20px", display:"flex", flexDirection:"column", gap:20 }}>
+
+          <div><STitle>🎣 Hook de apertura</STitle>
+            <Select placeholder="Seleccionar hook…" options={HOOKS} value={hook} onChange={setHook} />
+          </div>
+
+          <div><STitle>🍽️ Platillo a preparar</STitle>
+            <Select placeholder="Seleccionar platillo…" options={PLATILLOS} value={plat} onChange={setPlat} />
+          </div>
+
+          <div><STitle>🥘 Producto Inoxidables</STitle>
+            <Select placeholder="Seleccionar producto…" options={PRODUCTOS} value={prod} onChange={setProd} />
+          </div>
+
+          <div>
+            <STitle>🎨 Tono del post</STitle>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+              {TONES.map(t => (
+                <button key={t.k} onClick={() => setTone(t.k)}
+                  style={{ background: tone===t.k ? "rgba(201,168,76,.22)" : "rgba(255,255,255,.04)",
+                    border:`1px solid ${tone===t.k ? G : "rgba(201,168,76,.18)"}`,
+                    color: tone===t.k ? GL : CREAM,
+                    padding:"9px 4px", borderRadius:7, fontSize:"0.71rem",
+                    cursor:"pointer", fontFamily:"Montserrat,sans-serif",
+                    transition:"all 0.2s" }}>
+                  {t.l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <STitle>✏️ Detalle extra (opcional)</STitle>
+            <textarea value={extra} onChange={e => setExtra(e.target.value)} rows={2}
+              placeholder="Ej: destacar oferta de mayo, mencionar la tamalera…"
+              style={{ width:"100%", background:"rgba(255,255,255,.04)",
+                border:"1px solid rgba(201,168,76,.22)", color: CREAM,
+                padding:"10px 14px", borderRadius:7,
+                fontFamily:"Montserrat,sans-serif", fontSize:"0.81rem",
+                outline:"none", resize:"none" }} />
+          </div>
+
+          <div style={{ background:"rgba(30,92,56,.15)",
+            border:"1px solid rgba(45,138,85,.3)", borderRadius:7,
+            padding:"12px 14px", fontSize:"0.74rem", lineHeight:1.8 }}>
+            <strong style={{ color: GREENL }}>📲 CTA automático:</strong><br/>
+            WhatsApp: <strong style={{ color: GREENL }}>+{pWA}</strong>
+          </div>
+
+          <div style={{ height:1, background:"rgba(201,168,76,.12)" }} />
+
+          <button onClick={generatePost} disabled={loading}
+            style={{ width:"100%", padding:"15px",
+              background:`linear-gradient(135deg,${GD},${G},${GD})`,
+              backgroundSize:"200% 200%",
+              border:"none", borderRadius:8, color: DARK,
+              fontFamily:"Montserrat,sans-serif", fontWeight:800,
+              fontSize:"0.84rem", letterSpacing:"0.13em",
+              textTransform:"uppercase", cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.55 : 1, transition:"all 0.3s",
+              animation: loading ? "none" : "shimmer 3s infinite",
+              boxShadow: loading ? "none" : "0 4px 20px rgba(201,168,76,.25)" }}>
+            {loading ? "⏳ Generando post…" : "✨ Generar Post con IA"}
+          </button>
+
+        </div>
+
+        {/* ── RIGHT ── */}
+        <div style={{ padding:"24px 24px 24px 28px",
+          display:"flex", flexDirection:"column", gap:20 }}>
+
+          {/* Stats */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
+            {[["Posts Generados", stats.total],["Esta Sesión", stats.ses],["Copiados", stats.cop]].map(([lbl,val]) => (
+              <div key={lbl} style={{ background:"rgba(255,255,255,.03)",
+                border:"1px solid rgba(201,168,76,.14)",
+                borderRadius:9, padding:14, textAlign:"center" }}>
+                <div style={{ fontFamily:"Cormorant Garamond,serif",
+                  fontSize:"2rem", fontWeight:700, color: G, lineHeight:1 }}>{val}</div>
+                <div style={{ fontSize:"0.6rem", textTransform:"uppercase",
+                  letterSpacing:"0.1em", color:"rgba(255,255,255,.38)", marginTop:5 }}>{lbl}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Output */}
+          <div style={{ background:"rgba(255,255,255,.03)",
+            border:"1px solid rgba(201,168,76,.18)",
+            borderRadius:10, minHeight:300, position:"relative", overflow:"hidden" }}>
+
+            {/* Spinner */}
+            {loading && (
+              <div style={{ position:"absolute", inset:0,
+                background:"rgba(26,18,8,.9)", display:"flex",
+                flexDirection:"column", alignItems:"center",
+                justifyContent:"center", gap:16, zIndex:20 }}>
+                <div style={{ width:48, height:48,
+                  border:"3px solid rgba(201,168,76,.2)",
+                  borderTopColor: G, borderRadius:"50%",
+                  animation:"spin 0.8s linear infinite" }} />
+                <div style={{ fontSize:"0.77rem", color: GL,
+                  letterSpacing:"0.1em", fontStyle:"italic",
+                  animation:"pulse 1.5s ease infinite" }}>
+                  Creando tu post con IA…
+                </div>
+              </div>
+            )}
+
+            {/* Placeholder */}
+            {!loading && !postVis && (
+              <div style={{ position:"absolute", inset:0, display:"flex",
+                flexDirection:"column", alignItems:"center",
+                justifyContent:"center", gap:14,
+                color:"rgba(255,255,255,.18)", textAlign:"center", padding:20 }}>
+                <div style={{ fontSize:"3rem", opacity:0.25 }}>🥘</div>
+                <div style={{ fontSize:"0.79rem", lineHeight:1.7 }}>
+                  Selecciona un <strong style={{ color: G }}>hook</strong> y un{" "}
+                  <strong style={{ color: G }}>platillo</strong><br/>
+                  luego presiona Generar Post
+                </div>
+              </div>
+            )}
+
+            {/* Post */}
+            {!loading && postVis && (
+              <div style={{ padding:28, animation:"fadeUp 0.4s ease" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+                  <div style={{ width:44, height:44, borderRadius:"50%",
+                    background:`linear-gradient(135deg,${GD},${GREEN})`,
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    fontFamily:"Cormorant Garamond,serif", fontSize:"1.2rem",
+                    fontWeight:700, color: GL, flexShrink:0 }}>I</div>
+                  <div>
+                    <div style={{ fontWeight:700, fontSize:"0.84rem" }}>
+                      {pSaved ? `@${pName.toLowerCase().replace(/\s+/g,"_")}` : "@inoxidablesdelnorte"}
+                    </div>
+                    <div style={{ fontSize:"0.69rem", color:"rgba(255,255,255,.38)" }}>
+                      Cocina Saludable · Acero T304
+                    </div>
+                  </div>
+                </div>
+                <div style={{ background:"rgba(255,255,255,.045)",
+                  border:"1px solid rgba(255,255,255,.07)",
+                  borderRadius:8, padding:18, fontSize:"0.87rem",
+                  lineHeight:1.85, whiteSpace:"pre-wrap", color: CREAM, minHeight:160 }}>
+                  {postTxt}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          {postVis && !loading && (
+            <div style={{ display:"flex", gap:10, flexWrap:"wrap", animation:"fadeUp 0.3s ease" }}>
+              {[
+                { l:"📋 Copiar Post", fn:copyPost,  bg:"rgba(201,168,76,.15)", bc:"rgba(201,168,76,.4)",  c: GL },
+                { l:"🔄 Regenerar",  fn:generatePost, bg:"rgba(255,255,255,.05)", bc:"rgba(255,255,255,.15)", c: CREAM },
+                { l:"💬 WhatsApp",   fn:sendWA,     bg:"rgba(37,211,102,.15)", bc:"rgba(37,211,102,.35)", c:"#25d366" },
+              ].map(b => (
+                <button key={b.l} onClick={b.fn}
+                  style={{ padding:"10px 18px", borderRadius:7,
+                    fontFamily:"Montserrat,sans-serif", fontSize:"0.74rem",
+                    fontWeight:600, cursor:"pointer", letterSpacing:"0.06em",
+                    textTransform:"uppercase", transition:"all 0.2s",
+                    background: b.bg, border:`1px solid ${b.bc}`, color: b.c }}>
+                  {b.l}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Tip */}
+          <div style={{ background:"rgba(201,168,76,.055)",
+            borderLeft:`3px solid ${GD}`, padding:"12px 16px",
+            borderRadius:"0 7px 7px 0", fontSize:"0.74rem",
+            lineHeight:1.65, color:"rgba(255,255,255,.5)" }}>
+            <strong style={{ color: GL }}>💡 Tip:</strong> Los posts con hook de salud + platillo familiar generan hasta 3× más engagement. Alterna tonos cada semana para mantener la audiencia activa.
+          </div>
+
+          {/* Historial */}
+          <div>
+            <STitle>📚 Últimos posts generados</STitle>
+            {history.length === 0
+              ? <div style={{ color:"rgba(255,255,255,.2)", fontSize:"0.74rem" }}>
+                  Los posts generados aparecerán aquí…
+                </div>
+              : <div style={{ display:"grid",
+                  gridTemplateColumns:"repeat(auto-fill,minmax(195px,1fr))", gap:10 }}>
+                  {history.map((item, i) => (
+                    <div key={i}
+                      onClick={() => { setPostTxt(item.full); setPostVis(true); }}
+                      style={{ background:"rgba(255,255,255,.03)",
+                        border:"1px solid rgba(255,255,255,.07)",
+                        borderRadius:8, padding:12, fontSize:"0.71rem",
+                        lineHeight:1.55, cursor:"pointer",
+                        color:"rgba(255,255,255,.55)", transition:"all 0.2s" }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderColor = "rgba(201,168,76,.38)";
+                        e.currentTarget.style.color = CREAM;
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderColor = "rgba(255,255,255,.07)";
+                        e.currentTarget.style.color = "rgba(255,255,255,.55)";
+                      }}>
+                      <span style={{ fontSize:"0.59rem", background:"rgba(201,168,76,.2)",
+                        color: G, padding:"2px 7px", borderRadius:20,
+                        display:"inline-block", marginBottom:6,
+                        letterSpacing:"0.06em", textTransform:"uppercase" }}>
+                        {item.plat.slice(0,18)}
+                      </span>
+                      <br/>{item.preview}
+                    </div>
+                  ))}
+                </div>
+            }
+          </div>
+
+        </div>
+      </div>
+
+      {/* ══ TOAST ══ */}
+      <div style={{
+        position:"fixed", bottom:24, right:24,
+        background: GREEN, color:"#fff",
+        padding:"12px 22px", borderRadius:9,
+        fontSize:"0.81rem", fontWeight:600,
+        opacity: toast.on ? 1 : 0,
+        transform: toast.on ? "translateY(0)" : "translateY(10px)",
+        transition:"all 0.3s", zIndex:999, pointerEvents:"none",
+        boxShadow:"0 4px 20px rgba(0,0,0,.4)"
+      }}>{toast.msg}</div>
+
+    </div>
+  );
+}
